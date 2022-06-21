@@ -1,7 +1,7 @@
 - 👋 Hi, I’m @alexbui96
 - 👀 I’m interested in Data Science
 - 🌱 I’m currently learning Computional Applied Mathematics (MS)
-- 📫 Reach me at alex.bui1996@gmail.com
+- 📫 Reach me at alex.bui717@gmail.com
 
 <!---
 alexbui96/alexbui96 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
