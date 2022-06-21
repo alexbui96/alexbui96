@@ -1,4 +1,4 @@
-- 👋 Hi, I’m @alexbui96
+- 👋 Hi, I’m Alex
 - 👀 I’m interested in Data Science
 - 🌱 I’m currently learning Computional Applied Mathematics (MS)
 - 📫 Reach me at alex.bui0717@gmail.com
