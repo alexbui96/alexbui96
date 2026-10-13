@@ -81,9 +81,30 @@ main{display:grid;gap:18px;padding-block:22px}
 .exp h3{margin:0;font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .exp p{margin:0;max-width:70ch}
 .answer{font-weight:600}
+.tabs{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);width:max-content;max-width:100%}
+.tab{font:inherit;font-size:14px;font-weight:500;border:0;border-radius:7px;padding:7px 14px;background:transparent;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--surface)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fbar{border-bottom:1px solid var(--line);padding-block:10px 12px;display:grid;gap:10px}
+.meter .m-mid{background:var(--warn)}
+.stage{display:grid;gap:14px;padding-block:22px}
+.fmeta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fmeta .status{margin-left:auto}
+.status.new{background:var(--accent-soft);color:var(--accent)}
+.flash{font:inherit;color:var(--ink);text-align:left;display:grid;align-content:center;gap:14px;min-height:280px;padding:28px 26px;background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:pointer;width:100%;min-width:0}
+.flash:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.flash.back{background:var(--accent-soft);border-color:var(--accent)}
+.face{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.ftext{font-family:var(--f-display);font-size:21px;line-height:1.5;overflow-wrap:anywhere;text-wrap:pretty}
+.flash.back .ftext{font-family:var(--f-body);font-size:17px;line-height:1.6}
+.fhint{font-size:12.5px;color:var(--muted)}
+.factions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.btn.again{background:transparent;border-color:var(--bad);color:var(--bad)}
+kbd{font-family:var(--f-mono);font-size:11px;border:1px solid currentColor;border-radius:3px;padding:0 4px;margin-left:4px;opacity:.7}
+.fnote{margin:0;text-align:center;font-size:13px;color:var(--muted)}
 .empty{color:var(--muted);text-align:center;padding:40px 0}
 footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
-@media (max-width:520px){.stem{font-size:16.5px}.card{padding:16px 14px}.status{margin-left:0}}
+@media (max-width:520px){.flash{min-height:240px;padding:22px 18px}.ftext{font-size:18.5px}.stem{font-size:16.5px}.card{padding:16px 14px}.status{margin-left:0}}
 @media (prefers-reduced-motion:no-preference){.opt{transition:border-color .12s,background-color .12s}}
 </style>
 
@@ -91,13 +112,18 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <header class="top">
     <div class="eyebrow">SEAS 8525 · Generative AI · Doctoral exam prep</div>
     <h1>Generative AI Question Bank</h1>
-    <p class="lede">132 questions drawn from Classes 1–7 and the SimCLR paper (Chen et al., 2020). Every option has its own note, and every question has a full explanation. Correct answers are never the longest option, and option order is shuffled.</p>
+    <p class="lede">178 questions and 132 flashcards drawn from Classes 1–7 and the SimCLR paper (Chen et al., 2020). Every option has its own note, and every question has a full explanation. Correct answers are never the longest option, and option order is shuffled.</p>
+    <div class="tabs" role="tablist" aria-label="Study mode">
+      <button class="tab" role="tab" id="tab-quiz" aria-selected="true" aria-controls="quizView">Practice questions</button>
+      <button class="tab" role="tab" id="tab-flash" aria-selected="false" aria-controls="flashView">Flashcards</button>
+    </div>
     <div class="legend">
       <span><i class="shape c"></i>Circle: one correct answer</span>
       <span><i class="shape s"></i>Square: select all that apply (two or more)</span>
     </div>
   </header>
 
+  <section id="quizView" role="tabpanel" aria-labelledby="tab-quiz">
   <div class="scorebar"><div class="score" aria-live="polite">
       <span><span class="lbl">Correct</span> <b id="s-ok">0</b></span>
       <span><span class="lbl">Wrong</span> <b id="s-bad">0</b></span>
@@ -121,11 +147,41 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   </div>
 
   <main id="list"></main>
-  <footer>Sources: Class 1 Intro to Generative AI · Class 2 Deep Learning (Vision ↔ NLP) · Class 3 Autoencoders · Class 4 Transformers · Class 5 Autoregressive Models · Class 6 Multimodal LLMs · Class 7 Diffusion Models · Chen et al. (2020), A Simple Framework for Contrastive Learning of Visual Representations. Your answers are saved in this browser only.</footer>
+  </section>
+
+  <section id="flashView" role="tabpanel" aria-labelledby="tab-flash" hidden>
+    <div class="fbar">
+      <div class="score"><span><span class="lbl">New</span> <b id="b0">0</b></span><span><span class="lbl">Learning</span> <b id="b1">0</b></span><span><span class="lbl">Known</span> <b id="b2">0</b></span><span class="meter" aria-hidden="true"><i class="m-ok" id="fm-ok"></i><i class="m-mid" id="fm-mid"></i></span></div>
+      <div class="filters" id="ftopics" aria-label="Filter flashcards by class"></div>
+      <div class="tools">
+        <button class="chip" id="fc-due" aria-pressed="true">Skip known cards</button>
+        <button class="chip" id="fc-shuffle" aria-pressed="false">Shuffle deck</button>
+        <button class="chip" id="fc-rev" aria-pressed="false">Show answer side first</button>
+        <button class="chip" id="fc-reset">Reset flashcards</button>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="fmeta"><span id="fc-pos">–</span><span id="fc-topic" class="tag"></span><span id="fc-box" class="status"></span></div>
+      <button class="flash" id="flash" aria-live="polite" aria-label="Flashcard, press to flip">
+        <span class="face" id="fc-face">Front</span>
+        <span class="ftext" id="fc-text"></span>
+        <span class="fhint" id="fc-hint">Click or press Space to flip</span>
+      </button>
+      <div class="factions">
+        <button class="btn quiet" id="fc-prev" aria-label="Previous card">← Prev</button>
+        <button class="btn again" id="fc-again">Again <kbd>1</kbd></button>
+        <button class="btn" id="fc-good">Got it <kbd>2</kbd></button>
+        <button class="btn quiet" id="fc-next" aria-label="Next card">Next →</button>
+      </div>
+      <p class="fnote">“Got it” moves a card up one box (New → Learning → Known). “Again” sends it back to New. Keys: Space flips, ← → move, 1 and 2 rate.</p>
+    </div>
+  </section>
+  <footer>Sources: Class 1 Intro to Generative AI · Class 2 Deep Learning (Vision ↔ NLP) · Class 3 Autoencoders · Class 4 Transformers · Class 5 Autoregressive Models · Class 6 Multimodal LLMs · Class 7 Diffusion Models · Chen et al. (2020), A Simple Framework for Contrastive Learning of Visual Representations. Your answers and flashcard progress are saved in this browser only.</footer>
 </div>
 
 <script>
 const QS=[];let _n=0;
+const FS=[];function F(topic,front,back){FS.push({id:"f"+hash(front).toString(36),n:FS.length,topic,front,back})}
 function Q(topic,type,q,opts,exp){QS.push({id:"q"+(++_n),topic,type,q,opts:opts.map(o=>({t:o[0],c:!!o[1],n:o[2]})),exp});}
 // Class 1 — Introduction; Class 2 — Deep Learning; SimCLR paper
 Q("intro","s","A model is trained to estimate p(y | x), where x is a painting and y ∈ {Van Gogh, not Van Gogh}. Which statement best characterizes what this model can and cannot do?",[
@@ -1084,6 +1140,473 @@ Q("trans","s","Pretraining a language model before fine-tuning adds an inductive
  ["The model is biased toward the majority class",0,"Inductive bias here means useful prior knowledge, not class imbalance."]
 ],"Pretraining on large unlabeled corpora (BooksCorpus, Wikipedia) teaches general regularities of language by predicting tokens in context. The result is a general-purpose model ready for fine-tuning.");
 
+// Batch 2 — Classes 1, 2, SimCLR, 3
+Q("intro","s","Which family is an example of an approximate explicit density model that uses Markov-chain sampling rather than variational methods?",[
+ ["Normalizing flows",0,"Flows are tractable explicit models built from invertible functions, and they give exact densities."],
+ ["Energy-based models",1,"Correct."],
+ ["Generative adversarial networks, whose generator is trained through a separate discriminator network",0,"GANs are implicit models. They define no density at all."],
+ ["Autoregressive models such as PixelCNN",0,"Autoregressive models are tractable explicit models with an exact likelihood."]
+],"Class 1 approximate density models: VAEs (latent variable plus a variational approximation of the joint density), energy-based models (approximate methods via Markov-chain sampling) and diffusion models (approximate the density by learning to gradually denoise a corrupted image).");
+
+Q("intro","s","A normalizing flow keeps its density tractable by",[
+ ["imposing an ordering on input features and generating them one at a time",0,"That describes autoregressive models."],
+ ["applying a chain of invertible, tractable transformations to a simple base distribution",1,"Correct."],
+ ["training a discriminator to score samples and backpropagating its judgment into a generator network",0,"That describes GANs."],
+ ["bounding the likelihood with an ELBO",0,"That describes VAEs and diffusion models."]
+],"Because every step is invertible with a computable Jacobian, the change-of-variables formula gives the exact density of complex distributions built from a simple one.");
+
+Q("intro","m","In the sample-space example on the world map, which statements are correct? Select all that apply.",[
+ ["The sample space is all (latitude, longitude) points x = (x1, x2)",1,"Correct."],
+ ["New York City (40.7306, −73.9352) lies inside the true data-generating distribution",1,"Correct."],
+ ["The point (11.3493, 142.1996) is in the sample space but not in the true distribution, because it is at sea",1,"Correct."],
+ ["Points at sea are outside the sample space, since the sample space is defined as only the observed points in X",0,"The sample space contains every value x can take. Sea points are in it but have (near) zero true density."]
+],"Sample space ≠ support of p_data. The model’s density (the orange box) must integrate to 1 over the whole sample space, being 0 outside the box and constant inside.");
+
+Q("intro","s","Which statement about a probability density function is required for it to be a well-defined distribution?",[
+ ["Its maximum value must be at most 1",0,"Densities can exceed 1. A narrow Gaussian peaks well above 1."],
+ ["Its integral over the whole sample space equals 1",1,"Correct."],
+ ["It must be symmetric about its mean, as a Gaussian is, so that probabilities are balanced on both sides",0,"Many valid densities are skewed."],
+ ["It must be differentiable everywhere",0,"The uniform box density is discontinuous at its edges yet valid."]
+],"A density describes relative likelihood for a continuous variable; only integrals over regions are probabilities. The joint wind speed and direction example on the slide is a 2-D density.");
+
+Q("intro","m","Which of the following are unsupervised learning techniques mentioned in Class 1? Select all that apply.",[
+ ["Clustering, e.g., grouping elephants and zebras without labels",1,"Correct."],
+ ["Dimensionality reduction, e.g., projecting 3-D data to 2-D",1,"Correct."],
+ ["Generative modeling, which learns to produce new data similar to the training set",1,"Correct. It sits in the taxonomy under unsupervised learning."],
+ ["Logistic regression trained on pass/fail labels so that it can predict the outcome for new students",0,"That is supervised, discriminative learning."]
+],"Clustering is used for market segmentation and image compression. Dimensionality reduction helps visualization, noise reduction and computational efficiency. Prince’s taxonomy places generative, probabilistic and latent-variable models under unsupervised learning.");
+
+Q("intro","s","Why did industry historically favor discriminative models over generative ones, according to the lecture?",[
+ ["Generative models were illegal to deploy",0,"Not a reason given."],
+ ["They were easier to apply to practical tasks, e.g., doctors wanted diagnoses, not new images",1,"Correct."],
+ ["Discriminative models need no training data, while every generative model needs millions of labeled examples",0,"Both need data. Generative models are usually unsupervised."],
+ ["Generative models cannot run on GPUs",0,"They run on GPUs."]
+],"The shift came as cloud services began offering generative modeling via APIs: automated content generation, visual product rendering and brand-tailored advertising.");
+
+Q("dl","m","Which statements about pooling layers are correct? Select all that apply.",[
+ ["2×2 max pooling keeps only the maximum value in each group",1,"Correct."],
+ ["Average pooling averages the values in each group",1,"Correct."],
+ ["Pooling layers have no learnable parameters",1,"Correct."],
+ ["Max pooling increases the number of channels, which is how a CNN grows deeper feature maps over its layers",0,"Pooling downsamples height and width. Channel count comes from the number of conv filters."]
+],"The goal is to distill information by downsampling each channel. In AlexNet, 3×3 max pooling with stride 2 gives overlapping pooling.");
+
+Q("dl","s","A Conv2D layer uses kernel size 3×3, 64 input channels and 128 filters, with bias. How many learnable parameters does it have?",[
+ ["73,728",0,"This forgets the 128 biases."],
+ ["73,856",1,"Correct. (3·3·64 + 1) · 128."],
+ ["1,152, because each filter is 3×3 and is shared across all 128 output channels",0,"Each output channel has its own filter, spanning all 64 input channels."],
+ ["8,320",0,"That would be a 1×1 convolution: (64 + 1) · 128."]
+],"Parameters per filter = k_h · k_w · C_in + 1 bias. Multiply by the number of filters. Height and width of the input do not matter.");
+
+Q("dl","s","In tf.keras.layers.Conv2D, what does padding='same' do with stride 1?",[
+ ["Adds no padding, so the output shrinks",0,"That is padding='valid'."],
+ ["Zero-pads the input so the output keeps the same height and width",1,"Correct."],
+ ["Copies the edge pixels outward so that the convolution can see a mirror image of the border",0,"Keras uses zero padding, not reflection."],
+ ["Forces all filters to share the same weights",0,"Unrelated to padding."]
+],"With stride 2 and padding='same', the output size is ceil(input/2), which is why the autoencoder encoder halves 32 → 16 → 8 → 4.");
+
+Q("dl","m","Why are pretrained vision models needed, according to the lecture? Select all that apply.",[
+ ["They encode visual features learned from huge datasets like ImageNet",1,"Correct."],
+ ["Architectures like ResNet, Xception and MobileNet have millions of parameters",1,"Correct."],
+ ["Training such large models from scratch on a small dataset is not feasible",1,"Correct, as it would overfit and be too costly."],
+ ["Pretrained models are guaranteed to specialize perfectly to any target domain without further adaptation",0,"Limited specialization to the target domain is listed as a trade-off."]
+],"Benefits: rich visual knowledge, avoiding overfitting on small data, high performance from little data. Trade-off: limited domain specialization, which fine-tuning addresses. The COVID-19 chest X-ray paper is the real-world example given.");
+
+Q("dl","s","In the transfer-learning workflow, which step comes right after removing the pretrained model’s prediction head?",[
+ ["Freeze all weights including the new head",0,"The new head must stay trainable."],
+ ["Add a small custom classification head for the new classes",1,"Correct."],
+ ["Retrain the entire network from random initialization so that ImageNet-specific features are removed",0,"That throws away the pretrained knowledge."],
+ ["Deploy the model",0,"It has not been trained for the new task yet."]
+],"Steps: load model → remove head → add custom layers → freeze feature-extraction weights → train only the new layers.");
+
+Q("dl","s","In Foster’s feature hierarchy (units A → D), what does a unit C typically represent?",[
+ ["Raw pixel values for a single color channel",0,"That is unit A."],
+ ["Mid-level parts such as eyes or teeth",1,"Correct."],
+ ["The abstract concept “smiling”, which summarizes the whole face into a single high-level label",0,"That is unit D."],
+ ["Simple edges and textures",0,"That is unit B."]
+],"A: input pixels → B: low-level edges → C: mid-level parts → D: high-level concepts. Features are learned from data, not hand-coded.");
+
+Q("dl","s","DenseNet uses 1×1 convolutions in its transition blocks. What do they do?",[
+ ["Double the spatial resolution",0,"1×1 convolutions do not change spatial size."],
+ ["Halve the number of channels",1,"Correct."],
+ ["Replace the batch normalization layers, which are not used anywhere else in the DenseNet blocks",0,"DenseNet convolutions use batch normalization and ReLU."],
+ ["Add skip connections by element-wise addition",0,"DenseNet connects by concatenation, not addition."]
+],"DenseNet conv layers each produce 32 channels that are concatenated with earlier outputs, so channel count grows. Transition blocks compress it back.");
+
+Q("simclr","s","In SimCLR, how are two augmented views of the same image produced?",[
+ ["The same augmentation t is applied twice, giving identical views",0,"Identical views make the task trivial."],
+ ["Two operators t and t′ are sampled independently from the augmentation family T",1,"Correct."],
+ ["One view is the original image and the other is augmented in the default training setup",0,"That asymmetric setup was only used in the ablation, and it hurt performance."],
+ ["A GAN generates the second view",0,"No generative model is involved."]
+],"Default augmentations: random crop and resize (with flip), color distortion and Gaussian blur, applied sequentially.");
+
+Q("simclr","s","With ℓ2 normalization removed from NT-Xent (raw dot products), what happened?",[
+ ["Contrastive accuracy and linear-evaluation accuracy both rose",0,"Only contrastive accuracy rose."],
+ ["Contrastive accuracy rose, but linear-evaluation accuracy got worse",1,"Correct."],
+ ["Training diverged immediately and no model could be trained at any temperature value",0,"Training ran, but the representations were worse."],
+ ["Nothing changed",0,"Performance dropped significantly."]
+],"Table 5: with normalization and τ = 0.1, top-1 is 64.4%. Without normalization, contrastive accuracy is above 91% but top-1 is about 57%. Solving the pretext task better does not mean better features.");
+
+Q("simclr","m","Which loss functions did SimCLR compare against NT-Xent, and what was found? Select all that apply.",[
+ ["NT-Logistic loss",1,"Correct, one of the alternatives."],
+ ["Margin triplet loss",1,"Correct, one of the alternatives."],
+ ["Semi-hard negative mining helped the alternatives but still left them well below NT-Xent",1,"Correct. Their best was 57.9% versus 63.9%."],
+ ["NT-Xent required semi-hard negative mining to reach its best result, just as the other losses did",0,"NT-Xent weights negatives by hardness automatically and needs no mining."]
+],"The gradient analysis shows cross-entropy with ℓ2 normalization and temperature weights negatives by relative hardness; logistic and margin losses do not.");
+
+Q("simclr","s","On transfer to other image classification datasets via fine-tuning, how did SimCLR compare with a strong supervised baseline?",[
+ ["It was worse on every dataset",0,"Not the result."],
+ ["On par or better on 10 of 12 datasets",1,"Correct."],
+ ["Better on all 12 datasets by more than ten points each, making supervised pretraining obsolete",0,"Too strong a claim."],
+ ["It could not be fine-tuned",0,"Fine-tuning was evaluated."]
+],"The lecture: representations transfer strongly and match or exceed supervised pretraining on many datasets.");
+
+Q("simclr","s","Which encoder is used in the paper, and where is h taken from?",[
+ ["A ViT; h is the [class] token",0,"SimCLR uses ResNet."],
+ ["A ResNet; h is the output after the average-pooling layer",1,"Correct. For ResNet-50, h is 2048-dimensional."],
+ ["A ResNet; h is the output of the projection head’s final layer, the 128-d vector z",0,"That is z, which is not used downstream."],
+ ["An LSTM over image patches",0,"Not used."]
+],"The default projection head is a 2-layer MLP mapping the 2048-d h to a 128-d z. The framework places no constraints on the encoder architecture.");
+
+Q("vae","s","In the nonlinear latent variable model, which parts of the data are explained by f[z, φ] and which by σ²I?",[
+ ["f explains the noise, and σ²I explains the structure",0,"This is reversed."],
+ ["f models the important structure; leftover detail is treated as spherical noise σ²I",1,"Correct."],
+ ["Both model noise, because the latent z is pure noise and carries no information about the data",0,"z carries the structure through f."],
+ ["σ²I is learned per pixel",0,"In this model it is a spherical (shared) variance, assumed known."]
+],"z is lower-dimensional than x, so f captures the important factors. Pr(x|φ) is an infinite mixture of spherical Gaussians weighted by Pr(z).");
+
+Q("vae","s","Bayes’ rule gives the posterior Pr(z | x, φ) = Pr(x|z, φ) Pr(z) / Pr(x|φ). Why is it not used directly in the VAE?",[
+ ["The prior Pr(z) is unknown",0,"The prior is the fixed standard normal."],
+ ["The evidence Pr(x|φ) in the denominator is intractable",1,"Correct."],
+ ["The likelihood is not differentiable with respect to z, which blocks every gradient-based method",0,"The likelihood is differentiable."],
+ ["The posterior is always Gaussian, so it is unnecessary",0,"The true posterior is generally complex and non-Gaussian."]
+],"Hence the variational approximation q(z|x, θ) = N(g_μ[x, θ], g_Σ[x, θ]) with a diagonal covariance, found by minimizing KL to the true posterior. That is equivalent to maximizing the ELBO.");
+
+Q("vae","m","Which statements about the multivariate standard normal N(0, I) are correct? Select all that apply.",[
+ ["The mean vector is all zeros",1,"Correct."],
+ ["The covariance is the identity matrix, so each variable has unit variance",1,"Correct."],
+ ["Off-diagonal covariances are zero, so for a Gaussian the variables are independent",1,"Correct."],
+ ["The covariance matrix may be asymmetric, with cov(X, Y) ≠ cov(Y, X) when the variables are dependent",0,"Covariance matrices are always symmetric."]
+],"A general multivariate normal N(μ, Σ) has a mean vector and a symmetric covariance matrix. The VAE prior is N(0, I) and the encoder outputs a diagonal Σ.");
+
+Q("vae","s","Why does the plain autoencoder struggle to generate new images by sampling random latent points?",[
+ ["Its decoder cannot accept inputs outside the training set",0,"The decoder accepts any vector."],
+ ["Its latent space is not forced to be continuous, so random points often decode poorly",1,"Correct."],
+ ["It has no decoder, so there is no network that maps a latent point back into the image space",0,"An autoencoder has a decoder."],
+ ["Its encoder is stochastic",0,"A plain AE encoder is deterministic."]
+],"There is no requirement for the latent space to be continuous, and it is uneven and asymmetric. VAEs add sampling around each mean and a KL penalty, which turns the autoencoder into a strong generative model.");
+
+Q("vae","s","In the “infinite wardrobe” analogy, what does the VAE change compared with the plain autoencoder?",[
+ ["Each item is placed at one exact location, as before",0,"That is the plain autoencoder."],
+ ["Each item gets a general area, kept near the center and limited in size",1,"Correct."],
+ ["The stylist is replaced by a second wardrobe so that every outfit is stored twice on opposite sides",0,"Not part of the analogy."],
+ ["Items are sorted alphabetically",0,"Not part of the analogy."]
+],"Encoding to areas gives more diversity and avoids discontinuities. The constraints are the KL term: center the areas, limit their size, and penalize deviation.");
+
+// Batch 2 — Classes 4–7 and cross-topic
+Q("trans","s","For BERT-Base (H = 768, A = 12), what is the dimension of each attention head?",[
+ ["768",0,"That is the full hidden size, shared across heads."],
+ ["64",1,"Correct. 768 / 12."],
+ ["12, because each head works with one dimension per layer, and BERT-Base has twelve layers",0,"That confuses heads with layers."],
+ ["1,024",0,"That is BERT-Large’s hidden size."]
+],"Multi-head attention splits d_model across heads, then concatenates them and projects with W_O, so total cost is similar to one full-width head.");
+
+Q("trans","s","For a sequence of n tokens, how do the memory and compute of the self-attention score matrix scale?",[
+ ["O(n)",0,"Every token is compared with every other token."],
+ ["O(n²)",1,"Correct."],
+ ["O(log n), because softmax normalizes each row and so only a few entries ever need to be stored",0,"All n² scores are computed."],
+ ["O(1)",0,"No."]
+],"This quadratic cost motivates T-DMCA (local plus memory-compressed attention), GPT-3’s sparse attention and ViT’s patching.");
+
+Q("trans","m","Which statements about the sinusoidal positional encoding are correct? Select all that apply.",[
+ ["Each dimension corresponds to a sinusoid of a different frequency",1,"Correct."],
+ ["The wavelengths form a geometric progression from 2π to 10000·2π",1,"Correct."],
+ ["PE_{pos+k} is a linear function of PE_pos for any fixed offset k",1,"Correct. This helps the model attend by relative position."],
+ ["The encoding is learned by backpropagation together with the token embeddings during pretraining",0,"Sinusoidal encodings are fixed. Learned embeddings (BERT, ViT) are a different option."]
+],"PE(pos, 2i) = sin(pos/10000^{2i/d_model}) and PE(pos, 2i+1) = cos(…). They are added element-wise to the token embeddings.");
+
+Q("trans","s","In causal mediation analysis, how is the direct effect estimated?",[
+ ["Vary the input and let all mediators change freely",0,"That gives the total effect."],
+ ["Vary the input while holding the mediator fixed",1,"Correct."],
+ ["Clamp the input and change only the mediator, measuring how far the output moves",0,"That isolates the mediator’s own effect, which relates to the indirect path."],
+ ["Remove the output layer",0,"Not part of the method."]
+],"Total = observe output change when input varies. Direct = vary input with the mediator fixed. Indirect = the effect transmitted through the mediator.");
+
+Q("trans","m","Which factual-recall mechanism did MEMIT’s causal analysis find? Select all that apply.",[
+ ["Early-layer attention gathers the subject into the last subject token",1,"Correct."],
+ ["MLPs in a range of critical layers read this and write memories into the residual stream",1,"Correct."],
+ ["Later attention reads these hidden states to produce the output",1,"Correct."],
+ ["Facts are stored only in the final softmax layer’s bias vector, which MEMIT overwrites for each new fact",0,"Facts are mediated by mid-layer MLPs."]
+],"MEMIT edits by storing new key→value vector associations in those critical MLPs, spreading each update over several layers for scale.");
+
+Q("trans","s","Which MEMIT editing criterion is about not disturbing unrelated facts?",[
+ ["Effectiveness",0,"Effectiveness means the new fact wins over the old one."],
+ ["Specificity",1,"Correct."],
+ ["Generalization, which checks that the new fact is recalled under many different phrasings",0,"That is paraphrase robustness."],
+ ["Fluency",0,"Fluency is about natural post-edit text."]
+],"The four criteria: effectiveness, generalization, specificity and fluency.");
+
+Q("ar","s","PixelCNN outputs, for each pixel, what kind of prediction?",[
+ ["A single deterministic pixel value with no uncertainty",0,"Autoregressive models output distributions to sample from."],
+ ["A probability distribution over the pixel’s values given earlier pixels",1,"Correct."],
+ ["A latent vector for a VAE decoder, which then reconstructs the full image in one forward pass",0,"PixelCNN has no latent variable."],
+ ["A noise estimate as in diffusion",0,"That is diffusion."]
+],"Generation samples one pixel at a time from p(x_i | x_<i) in raster order, feeding each new pixel back in. This is slow but gives an exact likelihood.");
+
+Q("ar","s","A GRU’s update gate u_t close to 1 (in the Goodfellow formulation) means",[
+ ["the state is fully replaced by the new candidate",0,"In Goodfellow’s notation, u near 1 keeps the old state."],
+ ["the previous hidden state is mostly copied forward",1,"Correct."],
+ ["the reset gate is disabled and the GRU behaves like a plain feed-forward layer for that step",0,"The two gates act independently."],
+ ["the output is zero",0,"Not what the gate does."]
+],"h_t = u ⊙ h_{t−1} + (1 − u) ⊙ candidate. Update gates can copy dimensions or replace them with the target state at the sigmoid extremes. Conventions differ between sources, so check which one the exam uses.");
+
+Q("ar","m","Which are listed applications of LSTMs? Select all that apply.",[
+ ["Time-series forecasting",1,"Correct."],
+ ["Sentiment analysis",1,"Correct."],
+ ["Audio classification",1,"Correct."],
+ ["Text generation",1,"Correct."],
+ ["Computing exact image likelihoods by modeling pixels with masked convolutions in raster order",0,"That describes PixelCNN."]
+],"Advantages: learning long-term dependencies, robustness to vanishing gradients, a flexible architecture, and wide framework support (Keras LSTM and GRU layers).");
+
+Q("ar","s","In ViT, how are learned positional embeddings handled?",[
+ ["They are fixed sinusoids",0,"ViT learns them."],
+ ["They are trainable vectors, the same size as the patch embeddings, added to them",1,"Correct."],
+ ["They are concatenated to each patch embedding, which doubles the model width for every layer",0,"They are added, not concatenated."],
+ ["They are computed from pixel coordinates by a CNN",0,"No CNN is involved."]
+],"Class 5 uses ViT as the example of learned positional embeddings: initialized as parameters and optimized with the rest of the model.");
+
+Q("mm","s","Why does the Perceiver Resampler help Flamingo?",[
+ ["It increases the number of visual tokens for higher fidelity",0,"It reduces them to a fixed number."],
+ ["It turns any number of visual features into 64 tokens, cutting cross-attention cost",1,"Correct."],
+ ["It fine-tunes the vision encoder, which would otherwise stay random because it is never pretrained",0,"The vision encoder is pretrained and frozen."],
+ ["It replaces the language model",0,"The LM stays."]
+],"Learned latent queries cross-attend to the visual features. Ablations show it beats plain Transformer and MLP alternatives.");
+
+Q("mm","s","How does Flamingo’s vision encoder differ from the one in the lecture’s CLIP description?",[
+ ["Flamingo uses a ViT, while CLIP uses no image encoder",0,"Both have image encoders."],
+ ["Flamingo uses a frozen NFNet-F6, trained with a CLIP-style contrastive loss",1,"Correct."],
+ ["Flamingo trains its encoder from scratch with a captioning loss, as part of the full model",0,"Its encoder is pretrained contrastively and then frozen."],
+ ["They are identical",0,"Different architectures."]
+],"The slides contrast NFNet-F6 with the ViT used in some CLIP models. The encoder’s 2-D grid is flattened before the resampler.");
+
+Q("mm","m","Which tasks does composed image retrieval (CIR) cover in Pic2Word? Select all that apply.",[
+ ["Attribute editing, e.g., changing color or texture",1,"Correct."],
+ ["Object composition, e.g., adding or removing objects",1,"Correct."],
+ ["Domain conversion, e.g., real photo to sketch or cartoon",1,"Correct."],
+ ["Generating new pixels for the modified image with a diffusion decoder conditioned on the pseudo token",0,"CIR retrieves existing images from a database. It does not generate."]
+],"The query is an image plus a text modification. Strengths: zero-shot generalization, cost-effectiveness, flexibility, scalability and interpretability (images become pseudo-words).");
+
+Q("mm","s","Reported zero-shot CLIP robustness: by how much did it reduce the accuracy gap between ImageNet and natural-distribution-shift datasets?",[
+ ["By up to 10%",0,"Too small."],
+ ["By up to 75%",1,"Correct."],
+ ["It closed the gap completely on all seven shift datasets, so it reached 100% of ImageNet accuracy",0,"Not completely."],
+ ["It widened the gap",0,"It narrowed it."]
+],"The seven shift datasets vary pose, background and renditions. Fine-tuning CLIP on ImageNet reduces this robustness.");
+
+Q("mm","s","Compute for AI models other than Transformers grew by about 2× every 8 months. What is the takeaway for LLM training?",[
+ ["Compute requirements are shrinking",0,"They are growing rapidly."],
+ ["Cost, data and expertise rise steeply; one GPT-3 run can cost over $12M",1,"Correct."],
+ ["Any university lab can train GPT-3-scale models on a single GPU in a few days with standard tools",0,"It takes thousands of GPUs and months."],
+ ["Data is no longer a constraint",0,"Private-domain data is scarce."]
+],"The critical factors listed: compute and cost, scale of data, and the technical expertise for distributed systems and GPU management.");
+
+Q("diff","s","With a linear schedule β from 0.0001 to 0.02 over T = 1,000 steps, why are early steps small?",[
+ ["To save memory",0,"Not the reason."],
+ ["Early steps destroy little detail; bigger steps are fine once the image is noisy",1,"Correct."],
+ ["Because the U-Net is only trained on the first 10 steps, so later steps never need a gradient signal",0,"All timesteps are trained."],
+ ["To make the forward process learnable",0,"It is fixed."]
+],"A cosine schedule later improved on this by spreading the destruction of signal more evenly.");
+
+Q("diff","s","In a DDIM step, which estimate is computed first from the network’s noise prediction ε̂?",[
+ ["The next noise sample to add",0,"Fresh noise is only added when σ_t > 0."],
+ ["The predicted clean image x̂₀ = (x_t − √(1−ᾱ_t) ε̂) / √ᾱ_t",1,"Correct."],
+ ["The class label of the image, so that the sampler can pick the right noise schedule for it",0,"No labels are involved."],
+ ["The KL divergence",0,"Not computed during sampling."]
+],"Then x_{t−1} = √ᾱ_{t−1} x̂₀ + √(1 − ᾱ_{t−1}) ε̂ (when σ = 0): the signal is rescaled to the t−1 rate and the predicted noise reapplied at the t−1 noise rate.");
+
+Q("diff","m","Which training setup did Foster’s Keras diffusion model use? Select all that apply.",[
+ ["The AdamW optimizer, which is Adam with decoupled weight decay",1,"Correct."],
+ ["A mean absolute error loss on the predicted noise",1,"Correct."],
+ ["Normalization statistics computed on the training set",1,"Correct."],
+ ["A discriminator network trained jointly with the U-Net to sharpen the generated samples",0,"No discriminator is used."]
+],"The model was trained for 50 epochs. DownBlocks use average pooling; UpBlocks use bilinear upsampling plus concatenated skips.");
+
+Q("diff","s","How does the cascaded text-to-image diffusion system reach 1024×1024 output?",[
+ ["One U-Net directly generates 1024×1024",0,"It uses a cascade."],
+ ["64×64 base, then 256 and 1024 stages, each conditioned on text and the smaller image",1,"Correct."],
+ ["A GAN upsamples the 64×64 output, after the diffusion model has fixed the overall composition",0,"All stages are diffusion models."],
+ ["By tiling 256 separate 64×64 images",0,"Not tiling."]
+],"The text is encoded by a large language model (Saharia et al., 2022). The stochastic model yields many compatible images and can count objects and render text.");
+
+Q("diff","s","How does Sora generate images up to 2048×2048?",[
+ ["With a separate image-only diffusion model",0,"The same model is used."],
+ ["By arranging noise patches in a spatial grid one frame long",1,"Correct."],
+ ["By generating a long video and averaging every frame into one still picture at the end",0,"Not how it works."],
+ ["By upscaling with a CNN",0,"Not described."]
+],"Video size is controlled at inference by arranging randomly initialized patches in a grid of the right size. Images are simply one-frame videos.");
+
+Q("mix","s","Which pairing of model and generation step count is correct?",[
+ ["VAE: T denoising steps",0,"A VAE needs one decoder pass."],
+ ["DDPM: about 1,000 steps; DDIM: far fewer (e.g., 20)",1,"Correct."],
+ ["GAN: one network pass per pixel, so a 64×64 image needs 4,096 sequential passes",0,"That is how an autoregressive model generates."],
+ ["PixelCNN: one pass for the whole image",0,"PixelCNN needs one pass per pixel."]
+],"Speed is a key trade-off between the families: single-pass (VAE, GAN), iterative (diffusion) and sequential per element (autoregressive).");
+
+Q("mix","m","Which models freeze a large pretrained component and train only new connecting modules? Select all that apply.",[
+ ["BLIP-2 (frozen image encoder and LLM; trains the Q-Former)",1,"Correct."],
+ ["Flamingo (frozen NFNet and LM; trains the resampler and gated cross-attention)",1,"Correct."],
+ ["Pic2Word (frozen CLIP; trains the mapping network)",1,"Correct."],
+ ["SimCLR, which freezes a supervised ImageNet encoder and only trains its projection head",0,"SimCLR trains the encoder from scratch without labels."]
+],"Freezing keeps pretrained knowledge, cuts compute, and avoids catastrophic forgetting. This is the same principle as transfer learning in Class 2.");
+
+Q("mix","s","What do the VAE, diffusion and Sora pipelines have in common regarding Gaussian noise?",[
+ ["None use Gaussian noise",0,"All three do."],
+ ["Each samples standard-normal noise and maps it to data with a learned network",1,"Correct."],
+ ["All three add noise only at training time and generate fully deterministically from fixed inputs",0,"VAEs and DDPMs sample noise at generation time."],
+ ["They all use adversarial noise",0,"No."]
+],"VAE: z ~ N(0, I) → decoder. Diffusion: z_T ~ N(0, I) → iterative denoiser. Sora: noisy spacetime latent patches → diffusion transformer.");
+
+// Flashcards: F(topic, front, back)
+F("intro","Discriminative vs generative model: what does each estimate?","Discriminative: p(y | x), a label given an input (logistic regression, CRFs, decision trees). Generative: p(x), or p(x | y) when conditional. Only a generative model can sample new observations.");
+F("intro","Why must a generative model be probabilistic?","It needs a random component to produce varied outputs. A fixed calculation, such as averaging pixels, always gives the same result.");
+F("intro","Three desirable properties of p_model","Accuracy (high p_model ⇒ looks real), Generation (easy to sample), Representation (high-level features are interpretable).");
+F("intro","Parametric model","A family of densities p_θ(x) described by a finite number of parameters θ. Example: uniform boxes on the map, with 4 parameters (two corners).");
+F("intro","Likelihood L(θ | X) for i.i.d. data","∏ p_θ(x_i). It is 0 if any observed point has density 0 under the model.");
+F("intro","Why use the log-likelihood?","A product of many terms in (0, 1) underflows. The log turns it into a sum with the same maximizer.");
+F("intro","Generative modeling as MLE","Find θ (network weights) that maximize the likelihood of the data, i.e., minimize the negative log-likelihood.");
+F("intro","Taxonomy: tractable explicit density","Autoregressive models (order features, generate sequentially) and normalizing flows (invertible transforms of a simple distribution).");
+F("intro","Taxonomy: approximate explicit density","VAEs (variational bound), energy-based models (Markov-chain sampling), diffusion models (learned gradual denoising).");
+F("intro","Taxonomy: implicit density","A stochastic process that generates data directly with no density estimate. GANs are the main example.");
+F("intro","Why is generative modeling hard? (4 reasons)","High-dimensional space; sparse observations; creative generalization (novel but plausible); explicit density is intractable.");
+F("intro","Representation learning: core idea","Encode high-dimensional data into a low-dimensional latent space and learn a mapping back to the data domain. Example: biscuit tins described by height and width.");
+F("intro","Sample space vs true distribution (map example)","The sample space is every (lat, long) point. NYC is in p_data. A point at sea is in the sample space but not in p_data.");
+F("intro","Generative AI project life cycle (6 stages)","Identify use case → Experiment & select → Adapt & augment (fine-tune, align) → Evaluate → Deploy & integrate → Monitor.");
+F("intro","Shared ethics principles (military and healthcare)","Traceability, Reliability, Lawfulness, Accountability, Governability, Equity.");
+F("intro","DDIB (Dual Diffusion Implicit Bridges)","Image-to-image translation: run the source diffusion ODE forward to a shared latent, then run the target ODE in reverse. Needs no paired data.");
+
+F("dl","Conv layer parameter formula","(k_h · k_w · C_in + 1) · filters. It does not depend on the input’s height or width.");
+F("dl","Dense layer parameter formula","inputs · outputs + outputs (biases). Flatten and pooling layers have 0 parameters.");
+F("dl","Lecture CNN parameter total","Conv1 490 + Conv2 1,820 + Flatten 0 + Dense 12,810 = 15,120.");
+F("dl","CIFAR-10","60,000 32×32 RGB images, 10 classes, 6,000 per class. Vanilla NN 50.89%, CNN ≈70%, random 10%.");
+F("dl","Feature hierarchy (Foster units A–D)","A: pixels → B: edges and textures → C: parts (eyes, teeth) → D: concepts (“smiling”).");
+F("dl","padding='valid' vs 'same'","valid: no padding, so the output shrinks. same: zero padding keeps the size (stride 1); stride 2 halves it.");
+F("dl","AlexNet key facts","ReLU everywhere; 3×3 max pooling with stride 2; 3 fully connected layers in the head; biases initialized slightly positive.");
+F("dl","Residual (skip) connection","f(x) = C(x) + x, so C learns the residual f(x) − x. Identity is easy (C = 0), gradients flow, and the loss landscape is smoother.");
+F("dl","Degradation problem","Deeper plain networks have higher training error. It is an optimization problem, not overfitting, and residual learning fixes it.");
+F("dl","DenseNet","Convolutions output 32 channels that are concatenated; 1×1 transition blocks halve the channels; BN + ReLU.");
+F("dl","MobileNetV2","Repeated inverted residual bottlenecks with depthwise convolutions, for mobile efficiency.");
+F("dl","Transfer learning workflow","Load pretrained model → remove head → add small head → freeze feature extractor → train the new layers only.");
+F("dl","Fine-tuning vs transfer learning","Fine-tuning updates more or all weights (needs more data and compute, adapts better). It is a specialized type of transfer learning.");
+F("dl","Learning-rate paradox in fine-tuning","Too high: catastrophic forgetting. Too low: very slow convergence. Fixes: LR ramp-up, differential LRs, low LR for early layers.");
+F("dl","Precision, recall, F1","Precision: accuracy of positive predictions. Recall: fraction of a class found. F1 = 2PR/(P + R), the harmonic mean.");
+F("dl","GLO (Generative Latent Optimization)","Tests (A1) convnet inductive bias vs (A2) adversarial training. Jointly optimizes the generator and per-image latents, with no discriminator. GAN-like on CelebA, MNIST, SVHN; worse on LSUN.");
+F("dl","GAN saddle point","A minimax equilibrium: a minimum for one player and a maximum for the other. Training is sensitive to initialization, architecture and hyperparameters.");
+F("dl","CPU vs GPU","CPU: low-latency serial work. GPU: high-throughput parallel arithmetic (many ALUs, caches hide memory latency).");
+
+F("simclr","SimCLR’s 4 components","Stochastic augmentation (2 views) → base encoder f (ResNet → h) → projection head g (MLP → z) → NT-Xent loss.");
+F("simclr","NT-Xent loss","ℓ_ij = −log [exp(sim(z_i, z_j)/τ) / Σ_{k≠i} exp(sim(z_i, z_k)/τ)], where sim is cosine similarity. Normalized, temperature-scaled cross entropy.");
+F("simclr","Negatives per positive pair","2(N − 1), the other augmented views in the batch. N = 8192 gives 16,382. No memory bank is used.");
+F("simclr","Most important augmentation pair","Random crop + color distortion. Without color distortion, color histograms are a shortcut.");
+F("simclr","Projection head findings","Nonlinear > linear (+3%) > none (>10%). Use h (before g), not z, downstream, because g discards information such as color and rotation.");
+F("simclr","Why global BN?","Positive pairs sit on the same device, so per-device BN statistics leak a shortcut. Aggregate BN statistics over all devices.");
+F("simclr","Default training setup","ResNet-50, batch 4096, 100 epochs, LARS with LR 4.8 (= 0.3 × B/256), weight decay 1e-6, 10-epoch warmup + cosine decay, 128-d z.");
+F("simclr","Temperature finding","ℓ2 normalization + τ ≈ 0.1 works best. Without normalization, contrastive accuracy rises but linear evaluation falls.");
+F("simclr","Headline results","Linear eval: R50 69.3%, R50(4×) 76.5% top-1 (= supervised R50). 1% labels: 75.5% (R50), 85.8% (4×) top-5.");
+F("simclr","Linear evaluation protocol","Train a linear classifier on the frozen encoder. Its test accuracy is a proxy for representation quality.");
+F("simclr","Batch size and epochs","Larger batches help most for short training. Contrastive learning benefits more than supervised from longer training (up to 1,000 epochs) and bigger models.");
+
+F("vae","Latent variable model","Pr(x) = ∫ Pr(x|z) Pr(z) dz, a likelihood times a prior, marginalized over the latent z.");
+F("vae","Mixture of Gaussians as an LVM","Discrete z with a categorical prior λ_n; Pr(x|z=n) = N(μ_n, σ_n²); Pr(x) = Σ λ_n N(x; μ_n, σ_n²).");
+F("vae","Nonlinear LVM","Prior N(0, I); likelihood N(f[z, φ], σ²I). An infinite mixture of spherical Gaussians.");
+F("vae","ELBO","A lower bound on log Pr(x|φ) = E_q[log Pr(x|z)] − KL(q(z|x) ‖ Pr(z)). Tight when q equals the true posterior.");
+F("vae","KL divergence properties","≥ 0, and = 0 only if identical; asymmetric; infinite if p > 0 where q = 0. It is the information lost when q represents p.");
+F("vae","Closed-form KL to N(0, I)","−0.5 · Σ(1 + log σ² − μ² − σ²).");
+F("vae","Reparameterization trick","z = μ + σ ⊙ ε with ε ~ N(0, I) and σ = exp(0.5 · log_var). Sampling becomes differentiable.");
+F("vae","Why output log variance?","The network output can be any real number; exp(log_var) is always positive.");
+F("vae","AE vs VAE encoder","AE maps to a single point, giving a gappy latent space. VAE maps to a Gaussian around a point, giving a continuous latent space; KL keeps it centered.");
+F("vae","Problems with the plain AE latent space","Variable density, asymmetry about (0, 0), large gaps, so random points decode badly.");
+F("vae","VAE loss","Reconstruction loss + β · KL(q(z|x) ‖ N(0, I)).");
+F("vae","CelebA VAE changes","3 channels; latent 2 → 200; β = 2,000; batch norm after each conv.");
+F("vae","Latent arithmetic and morphing","Smile vector = mean(smiling z) − mean(non-smiling z); z_new = z + α·v. Morph: z = z_A(1−α) + z_B α.");
+F("vae","Ancestral sampling","Sample in the order of the factorization: root first, then each conditional (z ~ prior, then x ~ Pr(x|z)).");
+F("vae","Conv2DTranspose","Upsamples: smaller spatial input with more channels → larger output with fewer channels.");
+F("vae","Fashion-MNIST AE encoder shapes","32×32×1 → (3 stride-2 convs: 32, 64, 128) → 4×4×128 = 2,048 → Dense(2). Loss: binary cross-entropy.");
+F("vae","ECMVAE key ideas","Shared c + specific s_a, s_v latents; orthogonality constraint; mutual-information maximization; JS divergence; frozen VGGish audio; TPAVI decoder.");
+F("vae","AVSBench","5,356 videos. S4 = single source, MS3 = multiple sources. Metrics: mIoU and F-score. ECMVAE: +3.00 / +3.84 mIoU.");
+
+F("trans","Scaled dot-product attention","softmax(QKᵀ / √d_k) V.");
+F("trans","Why scale by √d_k?","Dot products grow with d_k, which saturates the softmax and gives tiny gradients.");
+F("trans","Q, K, V intuition","Query = the current task; Key = what each token can help with; Value = each token’s content. A soft key-value lookup.");
+F("trans","Where are the learnable weights in attention?","W_Q, W_K, W_V (and W_O for multi-head). The attention arithmetic itself has no parameters.");
+F("trans","Additive vs dot-product attention","Similar complexity; dot-product is faster and memory-efficient on GPUs. Unscaled dot-product loses at large d_k.");
+F("trans","Sinusoidal positional encoding","PE(pos, 2i) = sin(pos/10000^{2i/d}), PE(pos, 2i+1) = cos(·). PE_{pos+k} is linear in PE_pos.");
+F("trans","Multi-head attention","Separate Q/K/V projections per head → concatenate → W_O. Heads attend to different subspaces and relations.");
+F("trans","Causal mask","Set scores of future positions to −∞ before softmax. Keeps generation autoregressive while training stays parallel.");
+F("trans","Cross-attention","Q from the decoder; K and V from the encoder output.");
+F("trans","Encoder-only / decoder-only / encoder–decoder","BERT (bidirectional, classification, NER) / GPT (left context, generation) / T5, BART (seq2seq: translation, summarization).");
+F("trans","BERT pretraining tasks","MLM (predict masked tokens from both sides) + NSP (50% IsNext / 50% NotNext).");
+F("trans","BERT sizes","Base: L12, H768, A12, 110M. Large: L24, H1024, A16, 340M. Data: BooksCorpus 800M + Wikipedia 2,500M words.");
+F("trans","BERT input embedding","Token + segment + position embeddings.");
+F("trans","T5","Text-to-text: every task is text in, text out, using one encoder–decoder.");
+F("trans","Layer norm","Per-sample mean 0 and variance 1 across features, then learnable γ and β. Independent of the batch, unlike batch norm.");
+F("trans","T-DMCA","Local attention (blocks) + memory-compressed attention (strided conv, kernel 3, stride 3, on K and V) for long sequences.");
+F("trans","Causal mediation analysis","IV = input, DV = output, mediators = neurons, layers, heads. Direct effect: vary input, fix mediator. Indirect effect: the effect through the mediator.");
+F("trans","FFN layers as key-value memories (Geva)","Keys detect patterns (shallow in lower layers, semantic in upper layers); values are distributions over the vocabulary.");
+F("trans","MEMIT","Mass-edits thousands of facts in critical mid-layer MLPs found by causal tracing. Criteria: effectiveness, generalization, specificity, fluency. Tested on GPT-J and GPT-NeoX.");
+
+F("ar","Autoregressive factorization","p(x) = ∏ p(x_t | x_<t). Exact, tractable likelihood; sequential generation.");
+F("ar","Positional embedding options","Additive (same dimension), concatenation (dimension grows), learned (trainable, as in ViT). Large magnitudes destroy semantics.");
+F("ar","RNN weights U, W, V","U: input→hidden, W: hidden→hidden, V: hidden→output. Shared across time.");
+F("ar","BPTT steps","Unroll → forward → loss (each step or final) → backward → sum gradients over time (shared weights) → update.");
+F("ar","Why RNN gradients vanish or explode","Products of many Jacobians over time. Vanishing is common; exploding is rare but damaging.");
+F("ar","LSTM gates","Forget (self-loop weight of the cell), input (write), output (expose). All sigmoid. The linear cell self-loop carries memory.");
+F("ar","GRU gates","Update gate (how much old state to keep) + reset gate (how much past state feeds the candidate). Reset ≈ 0 ignores the past.");
+F("ar","Luong global vs local attention","Global: all source states, blurrier alignment, dot scoring best. Local: predicted position p_t plus a window, sharper alignment, general scoring best for predictive.");
+F("ar","Luong results","+5.0 BLEU over non-attentional systems. The ensemble reached 25.9 BLEU on WMT’15 En→De (+1.0 over previous best).");
+F("ar","PixelCNN masks","Type A (first layer): excludes the center and future pixels. Type B (later layers): includes the center. Raster-scan order.");
+F("ar","PixelCNN building blocks","Masked convolutions + residual blocks; outputs a distribution per pixel.");
+
+F("mm","BPE","Start from characters; repeatedly merge the most frequent adjacent pair into a new symbol, so subwords emerge.");
+F("mm","GPT-2 adaptive input and softmax","Bigger embeddings for frequent words; vocabulary clustered by frequency (e.g., 100 / 900 / 9,000) to cheapen the softmax.");
+F("mm","GPT-3 improvements","175B parameters (June 2020); sparse attention; multi-head refinements; pipeline efficiency.");
+F("mm","ViT recipe","16×16 patches → linear projection → + learnable 1-D positions → [class] token → pre-LN Transformer (MSA + GELU MLP).");
+F("mm","ViT inductive bias","Lacks CNN locality and translation equivariance, so it needs large-scale data.");
+F("mm","ViT positional embedding finding","1-D, 2-D and relative all perform similarly; 1-D learns 2-D structure.");
+F("mm","Mean attention distance","Grows with depth. Early layers mix local and global heads; late layers are global.");
+F("mm","Quadrangle attention (“QFormer”)","Learned projective transform turns square windows into quadrangles; decomposed into scale, shear, rotation, translation, projection. Not BLIP-2’s Q-Former.");
+F("mm","CLIP training","Image and text encoders; symmetric cross-entropy over cosine similarities. WIT: 400M pairs, 500K queries, ≤20K per query.");
+F("mm","CLIP zero-shot","Encode class names as text and pick the most similar to the image. Matches 4-shot logistic regression; up to 75% smaller robustness gap.");
+F("mm","CLIP limitations","Specialized domains (PatchCamelyon), social bias, surveillance misuse. Fine-tuning on ImageNet reduces robustness.");
+F("mm","DALL·E 2 pipeline","CLIP text encoder → prior (text embedding → image embedding) → decoder (image from embedding + text).");
+F("mm","BLIP","MED (multimodal mixture of encoder–decoder) + CapFilt (synthetic captions + noise filtering).");
+F("mm","BLIP-2","Frozen image encoder + frozen LLM. The Q-Former learns vision-language representations, then a projection feeds a soft visual prompt to the LLM.");
+F("mm","Pic2Word","Zero-shot composed image retrieval. A mapping network turns a frozen CLIP image embedding into a pseudo-word token, trained on unlabeled images.");
+F("mm","ScreenAI","PaLI + Pix2Struct patching; 670M / 2B / 5B parameters; auto-annotated screen schema + LLM-generated tasks; SOTA on UI and infographic tasks.");
+F("mm","Flamingo architecture","Frozen NFNet-F6 → Perceiver Resampler (64 tokens) → frozen LM interleaved with tanh-gated cross-attention (α = 0 at init).");
+F("mm","Flamingo image-causal masking","Each text token cross-attends only to the image just before it. Trained with 5 images; evaluated with up to 32.");
+F("mm","Flamingo limitations","Inherits LM hallucinations; classification behind contrastive models; in-context learning is sensitive to demonstrations.");
+
+F("diff","Diffusion model in one line","A fixed forward process gradually adds Gaussian noise; a learned reverse process denoises step by step. Latents have the same size as the data.");
+F("diff","Forward step","z_t = √(1−β_t) z_{t−1} + √β_t ε_t. A Markov chain that keeps unit variance.");
+F("diff","Diffusion kernel","q(z_t | x) = N(√ᾱ_t x, (1−ᾱ_t) I), ᾱ_t = ∏(1−β_s). Jump to any t in one step.");
+F("diff","Marginal q(z_t)","The distribution of z_t over all starting data and all paths. It blurs toward N(0, I) as t grows.");
+F("diff","q(z_{t−1} | z_t) vs q(z_{t−1} | z_t, x)","The first is intractable (needs the marginal). Conditioning on x gives a closed-form Gaussian whose mean blends z_t and x.");
+F("diff","Decoder (reverse) model","Pr(z_{t−1} | z_t) = N(f_t[z_t, φ_t], σ_t² I), with fixed variances. Valid when β_t is small and T is large.");
+F("diff","Training objective","Maximize the ELBO (via Jensen’s inequality). In practice, predict the added noise ε with a least-squares (or MAE) loss.");
+F("diff","Noise schedules","DDPM: β linear from 1e-4 to 0.02 over T = 1,000. A later cosine schedule works better.");
+F("diff","Diffusion U-Net","Down and up paths with concatenated skips; residual blocks + self-attention; one network for all t via a sinusoidal time embedding.");
+F("diff","DDIM","σ_t = 0 gives a deterministic sampler: same noise → same image. Allows few steps (e.g., 20 instead of 1,000).");
+F("diff","DDIM step","Estimate x̂₀ from ε̂, then re-noise it to level t−1 using the signal and noise rates.");
+F("diff","Spherical interpolation of noise","sin/cos weights keep the variance at 1, so every interpolant is valid N(0, I) input.");
+F("diff","Classifier vs classifier-free guidance","Classifier: add the gradient of p(c|z). Classifier-free: class embedding in the U-Net, trained conditionally and unconditionally; trades quality for diversity.");
+F("diff","Cascaded text-to-image","64×64 → 256×256 → 1024×1024, each stage conditioned on the text embedding and the lower-resolution image.");
+F("diff","Sora","Video → compressed latent → spacetime patches → diffusion transformer. Native sizes; GPT-expanded prompts; emergent 3D consistency. Weak at physics.");
+
+F("mix","Exact likelihood?","Autoregressive and flows: exact. VAE and diffusion: bound. GAN: none.");
+F("mix","Sampling cost by family","VAE and GAN: 1 pass. Diffusion: T steps (≈20 with DDIM). Autoregressive: 1 pass per element.");
+F("mix","Where contrastive losses appear","SimCLR (views), CLIP (image–text), Pic2Word (pseudo token), Flamingo’s vision encoder pretraining.");
+F("mix","Where masking appears","GPT causal mask, PixelCNN masked convolutions, BERT MLM inputs, Flamingo image-causal cross-attention.");
+F("mix","Frozen backbone + small trainable bridge","BLIP-2 (Q-Former), Flamingo (resampler + gated cross-attention), Pic2Word (mapping network), transfer learning.");
+
 const TOPICS=[["intro","Class 1 · Intro"],["dl","Class 2 · Deep learning"],["simclr","SimCLR paper"],["vae","Class 3 · VAEs"],["trans","Class 4 · Transformers"],["ar","Class 5 · Autoregressive"],["mm","Class 6 · Multimodal"],["diff","Class 7 · Diffusion"],["mix","Cross-topic"]];
 const TNAME=Object.fromEntries(TOPICS);
 const ORDER=Object.fromEntries(TOPICS.map((t,i)=>[t[0],i]));
@@ -1176,4 +1699,66 @@ const rs=document.getElementById("reset");let armed=false,timer;
 rs.onclick=()=>{if(!armed){armed=true;rs.textContent="Click again to erase answers";timer=setTimeout(()=>{armed=false;rs.textContent="Reset progress"},3000);return}
   clearTimeout(timer);armed=false;rs.textContent="Reset progress";state.answers={};save();render()};
 render();
+
+// ---------- Flashcards ----------
+const FKEY="seas8525-flash-v1";
+let fst={box:{},due:true,shuffle:false,rev:false,seed:1,pos:0};
+try{const s=JSON.parse(localStorage.getItem(FKEY)||"null");if(s&&s.box)fst=Object.assign(fst,s)}catch(e){}
+function fsave(){try{localStorage.setItem(FKEY,JSON.stringify(fst))}catch(e){}}
+FS.sort((a,b)=>ORDER[a.topic]-ORDER[b.topic]||a.n-b.n);
+let ftop=new Set(),deck=[],flipped=false;
+const BOXN=["New","Learning","Known"],BOXC=["new","part","ok"];
+function fscope(){return FS.filter(c=>!ftop.size||ftop.has(c.topic))}
+function buildDeck(keepId){let d=fscope();if(fst.due)d=d.filter(c=>(fst.box[c.id]||0)<2);if(fst.shuffle)d=shuffled(d,fst.seed);deck=d;
+  if(keepId){const i=deck.findIndex(c=>c.id===keepId);fst.pos=i>=0?i:Math.min(fst.pos,Math.max(deck.length-1,0))}else fst.pos=0;flipped=false;showCard()}
+function fcounts(){const sc=fscope();const n=[0,0,0];sc.forEach(c=>n[fst.box[c.id]||0]++);["b0","b1","b2"].forEach((id,i)=>document.getElementById(id).textContent=n[i]);
+  document.getElementById("fm-ok").style.width=(sc.length?100*n[2]/sc.length:0)+"%";document.getElementById("fm-mid").style.width=(sc.length?100*n[1]/sc.length:0)+"%"}
+function showCard(){fcounts();const card=document.getElementById("flash"),pos=document.getElementById("fc-pos"),tp=document.getElementById("fc-topic"),bx=document.getElementById("fc-box");
+  const btns=["fc-again","fc-good","fc-prev","fc-next"].map(id=>document.getElementById(id));
+  if(!deck.length){card.classList.remove("back");document.getElementById("fc-face").textContent="Deck complete";
+    document.getElementById("fc-text").textContent=fst.due?"Every card in this selection is marked Known. Turn off “Skip known cards” to review them, or pick another class.":"No cards match this filter.";
+    document.getElementById("fc-hint").textContent="";pos.textContent="0 cards";tp.textContent="";tp.hidden=true;bx.hidden=true;btns.forEach(b=>b.disabled=true);fsave();return}
+  btns.forEach(b=>b.disabled=false);tp.hidden=false;bx.hidden=false;
+  const c=deck[fst.pos];const b=fst.box[c.id]||0;const showBack=flipped!==fst.rev;
+  card.classList.toggle("back",showBack);
+  document.getElementById("fc-face").textContent=showBack?"Answer":"Prompt";
+  document.getElementById("fc-text").textContent=showBack?c.back:c.front;
+  document.getElementById("fc-hint").textContent=flipped?"Rate yourself below, or flip back":"Click or press Space to flip";
+  pos.textContent=`Card ${fst.pos+1} of ${deck.length}`;tp.textContent=TNAME[c.topic];bx.textContent=BOXN[b];bx.className="status "+BOXC[b];
+  document.getElementById("fc-prev").disabled=fst.pos===0;fsave()}
+function flip(){if(!deck.length)return;flipped=!flipped;showCard()}
+function move(d){if(!deck.length)return;fst.pos=Math.max(0,Math.min(deck.length-1,fst.pos+d));flipped=false;showCard()}
+function rate(good){if(!deck.length)return;const c=deck[fst.pos];const b=fst.box[c.id]||0;fst.box[c.id]=good?Math.min(2,b+1):0;
+  if(fst.due&&fst.box[c.id]===2){deck.splice(fst.pos,1);if(fst.pos>=deck.length)fst.pos=0}else{fst.pos=deck.length?(fst.pos+1)%deck.length:0}
+  flipped=false;showCard()}
+document.getElementById("flash").onclick=flip;
+document.getElementById("fc-prev").onclick=()=>move(-1);
+document.getElementById("fc-next").onclick=()=>move(1);
+document.getElementById("fc-again").onclick=()=>rate(false);
+document.getElementById("fc-good").onclick=()=>rate(true);
+const ftb=document.getElementById("ftopics");
+ftb.innerHTML=`<button class="chip" data-t="" aria-pressed="true">All classes</button>`+TOPICS.map(([k,n])=>`<button class="chip" data-t="${k}" aria-pressed="false">${n} <span style="opacity:.7">${FS.filter(c=>c.topic===k).length}</span></button>`).join("");
+ftb.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const t=b.dataset.t;
+  if(!t)ftop.clear();else ftop.has(t)?ftop.delete(t):ftop.add(t);
+  ftb.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.t?ftop.has(x.dataset.t):!ftop.size));buildDeck()});
+function tog(id,key,after){const el=document.getElementById(id);el.setAttribute("aria-pressed",!!fst[key]);el.onclick=()=>{fst[key]=!fst[key];el.setAttribute("aria-pressed",fst[key]);after()}}
+tog("fc-due","due",()=>buildDeck(deck[fst.pos]&&deck[fst.pos].id));
+tog("fc-shuffle","shuffle",()=>{fst.seed=Math.floor(Math.random()*1e9);buildDeck()});
+tog("fc-rev","rev",()=>{flipped=false;showCard()});
+const fr=document.getElementById("fc-reset");let farmed=false,ftimer;
+fr.onclick=()=>{if(!farmed){farmed=true;fr.textContent="Click again to reset all cards";ftimer=setTimeout(()=>{farmed=false;fr.textContent="Reset flashcards"},3000);return}
+  clearTimeout(ftimer);farmed=false;fr.textContent="Reset flashcards";fst.box={};buildDeck()};
+const savedPos=fst.pos;buildDeck();fst.pos=Math.min(savedPos,Math.max(deck.length-1,0));showCard();
+
+// ---------- Tabs ----------
+let mode="quiz";
+function setMode(m){mode=m;document.getElementById("quizView").hidden=m!=="quiz";document.getElementById("flashView").hidden=m!=="flash";
+  document.getElementById("tab-quiz").setAttribute("aria-selected",m==="quiz");document.getElementById("tab-flash").setAttribute("aria-selected",m==="flash");
+  try{localStorage.setItem("seas8525-mode",m)}catch(e){}}
+document.getElementById("tab-quiz").onclick=()=>setMode("quiz");
+document.getElementById("tab-flash").onclick=()=>setMode("flash");
+document.addEventListener("keydown",e=>{if(mode!=="flash"||e.target.closest("input,textarea")||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.key===" "){if(e.target.closest("button"))return;e.preventDefault();flip()}
+  else if(e.key==="ArrowRight")move(1);else if(e.key==="ArrowLeft")move(-1);else if(e.key==="1")rate(false);else if(e.key==="2")rate(true)});
+try{const m=localStorage.getItem("seas8525-mode");if(location.hash==="#flashcards")setMode("flash");else if(m==="flash")setMode("flash")}catch(e){}
 </script>
