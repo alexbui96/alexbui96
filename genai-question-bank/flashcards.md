@@ -1,6 +1,6 @@
 # SEAS 8525 Flashcards
 
-145 cards. Cover the right column and test yourself.
+160 cards. Cover the right column and test yourself.
 
 ## Class 1 · Introduction to Generative AI
 
@@ -61,6 +61,26 @@
 | Headline results | Linear eval: R50 69.3%, R50(4×) 76.5% top-1 (= supervised R50). 1% labels: 75.5% (R50), 85.8% (4×) top-5. |
 | Linear evaluation protocol | Train a linear classifier on the frozen encoder. Its test accuracy is a proxy for representation quality. |
 | Batch size and epochs | Larger batches help most for short training. Contrastive learning benefits more than supervised from longer training (up to 1,000 epochs) and bigger models. |
+
+## Reading assignments: ECMVAE (Mao et al., 2023) and MEMIT (Meng et al., 2023)
+
+| Prompt | Answer |
+|---|---|
+| ECMVAE in one sentence | A conditional multimodal VAE for audio-visual segmentation. It factorizes latents into shared c and specific s_a, s_v, uses a JS-divergence bound, an orthogonality loss and MI maximization, and decodes masks with Panoptic-FPN. |
+| Why ECMVAE says the AVSBench baseline is weak | Implicit TPAVI fusion gives no guarantee audio is used. The model can regress masks from video alone. |
+| ECMVAE latent codes | c (shared: the sound producer), s_a (audio-specific: noise), s_v (visual-specific: scene). Fused sc_a = [c, s_a], sc_v = [c, s_v]. L = 16 per code, T = 5 frames. |
+| ECMVAE difference loss | L_diff = ‖cᵀs_a‖²_F + ‖cᵀs_v‖²_F + ‖s_aᵀs_v‖²_F. Zero when the subspaces are orthogonal, so there is no information leakage. +0.64 MS3 mIoU. |
+| ECMVAE mutual-information term | Maximize I(SC_a; SC_v) via the Barber–Agakov bound E[log q(sc_a\|sc_v)] + H(SC_a). H is constant because VGGish is frozen. Gaussian q from an MLP. |
+| PoE vs MoE vs JS (ECMVAE) | PoE: closed form, but one bad expert ruins the joint. MoE: robust, but no closed-form KL (needs importance sampling). JS with a mixture prior: stable and bounded. MS3: KL 56.38 < PoE 57.35 < MoE 57.53 < JS 57.84. |
+| ECMVAE hybrid loss (HELBO) | α₁·ELBO + (1−α₁)·L_GSNN with α₁ = 0.5. Also trains on prior samples, closing the posterior (sees y) vs prior (test time) gap. |
+| ECMVAE results and limitation | PVT: S4 81.74 / MS3 57.84 mIoU (+3.00 / +3.84 over AVSBench). Fewer parameters (91M vs 101M). Limitation: posterior collapse. |
+| MEMIT closed-form update | Δ = R K₁ᵀ (C₀ + K₁K₁ᵀ)⁻¹, with R = M₁ − W₀K₁ and C₀ = λ·E[kkᵀ] from Wikitext (λ = 15,000 for GPT-J). |
+| MEMIT critical layers | GPT-J: R = {3, …, 8}. GPT-NeoX: {6, …, 10}. Chosen where severing the MLP opens the largest causal-effect gap. |
+| MEMIT target vector zᵢ | zᵢ = hᵢᴸ + δᵢ, with δᵢ from gradient descent (25 steps, lr 0.5) maximizing P(new object) over random prefixes. ‖δ‖ is clamped to ≤ ¾‖h‖. |
+| MEMIT spreading rule | Layer l adds (zᵢ − hᵢᴸ)/(L − l + 1) of the remaining gap, in ascending order, recomputing activations. Small per-layer changes are more robust. |
+| MEMIT metrics | Efficacy, paraphrase (generalization), neighborhood (specificity). Score = harmonic mean. Plus fluency (generation entropy) and consistency (reference score). |
+| MEMIT vs baselines at 10,000 edits (CounterFact, GPT-J) | MEMIT S 85.8 (ES 98.9, PS 88.6, NS 73.7). FT-W S 67.6 with fluency collapse (GE 294). ROME 50.3. MEND 23.1. |
+| MEMIT limitations | Directional (s, r, o) facts only; reverse facts must be edited separately; hard relations (sport, ownership); misuse risk. |
 
 ## Class 3 · Autoencoders & VAEs
 

@@ -1,6 +1,6 @@
 # SEAS 8525 Code & Logic
 
-38 worked NumPy examples. Each snippet was run, and its real output is shown below the code.
+43 worked NumPy examples. Each snippet was run, and its real output is shown below the code.
 
 ## Class 1 · Introduction to Generative AI
 
@@ -283,6 +283,166 @@ Output:
 tau=1.0  weights=[0.334 0.247 0.183 0.136 0.1  ]
 tau=0.5  weights=[0.475 0.261 0.143 0.078 0.043]
 tau=0.1  weights=[0.95  0.047 0.002 0.    0.   ]
+```
+
+## Reading assignments: ECMVAE (Mao et al., 2023) and MEMIT (Meng et al., 2023)
+
+### MEMIT’s batch update: Δ = R K₁ᵀ (C₀ + K₁K₁ᵀ)⁻¹
+
+1. Treat one MLP output matrix W as a linear associative memory: it maps keys k (subject encodings) to values m (stored facts) with least squared error.
+2. To add u new pairs (K₁, M₁) without disturbing the old ones, minimize ‖W K₀ − M₀‖² + ‖W K₁ − M₁‖². The normal equations give Δ = R K₁ᵀ (C₀ + K₁K₁ᵀ)⁻¹, with R = M₁ − W₀K₁ and C₀ = K₀K₀ᵀ.
+3. C₀ only needs the covariance of old keys, so MEMIT estimates C₀ = λ·E[kkᵀ] from Wikitext activations. A larger λ protects old memories more and fits new ones less exactly.
+4. Below: a layer holds 5,000 facts perfectly, and we insert 100 new ones. A small λ stores the new facts almost exactly while old-fact error rises to about 7%. A large λ protects old facts more but fits the new ones less well. That is the generalization–specificity trade-off in miniature.
+
+```python
+import numpy as np
+rng = np.random.default_rng(30)
+d_k, d_v, n_old, n_new = 256, 64, 5000, 100
+scales = np.exp(-np.arange(d_k) / 40)                 # old keys mostly use a few directions
+K0 = rng.normal(size=(d_k, n_old)) * scales[:, None]
+M0 = rng.normal(size=(d_v, d_k)) @ K0                 # old facts: one consistent linear memory
+W0 = M0 @ K0.T @ np.linalg.inv(K0 @ K0.T)             # pretraining optimum (normal equation)
+K1 = rng.normal(size=(d_k, n_new)); M1 = 10 * rng.normal(size=(d_v, n_new))   # 100 new facts
+
+err = lambda W, K, M: np.linalg.norm(W @ K - M) / np.linalg.norm(M)
+print(f"before edit : new-fact error {err(W0, K1, M1):.3f}   old-fact error {err(W0, K0, M0):.4f}")
+for lam in (1e-3, 1e-1, 1e1):
+    C0 = lam * K0 @ K0.T                              # MEMIT: lambda * covariance of old keys
+    R = M1 - W0 @ K1                                  # residual of new facts under old weights
+    W1 = W0 + R @ K1.T @ np.linalg.inv(C0 + K1 @ K1.T)
+    print(f"lambda={lam:<6}: new-fact error {err(W1, K1, M1):.3f}   old-fact error {err(W1, K0, M0):.4f}")
+```
+
+Output:
+
+```
+before edit : new-fact error 1.884   old-fact error 0.0000
+lambda=0.001 : new-fact error 0.000   old-fact error 0.0734
+lambda=0.1   : new-fact error 0.007   old-fact error 0.0727
+lambda=10.0  : new-fact error 0.325   old-fact error 0.0454
+```
+
+### MEMIT spreads each edit over the critical layers
+
+1. MEMIT first finds a target hidden state zᵢ at the last critical layer L, by gradient descent on −log P(new object | random prefix + prompt).
+2. The needed change is δᵢ = zᵢ − hᵢᴸ. Because MLP outputs add into the residual stream, the change can be split across layers in R.
+3. Going up the layers, layer l writes rᵢˡ = (zᵢ − hᵢᴸ)/(L − l + 1) of the remaining gap, then activations are recomputed. Each layer takes an equal share, so no single weight matrix changes much. Smaller changes are more robust.
+
+```python
+import numpy as np
+R_layers = [3, 4, 5, 6, 7, 8]                  # GPT-J critical MLP layers
+L = max(R_layers)
+remaining, h = 1.0, 0.0                        # gap z - h, in units of delta
+for l in R_layers:
+    share = remaining / (L - l + 1)            # Eq. 20
+    h += share; remaining -= share
+    print(f"layer {l}: writes {share:.3f} of delta, cumulative {h:.3f}")
+```
+
+Output:
+
+```
+layer 3: writes 0.167 of delta, cumulative 0.167
+layer 4: writes 0.167 of delta, cumulative 0.333
+layer 5: writes 0.167 of delta, cumulative 0.500
+layer 6: writes 0.167 of delta, cumulative 0.667
+layer 7: writes 0.167 of delta, cumulative 0.833
+layer 8: writes 0.167 of delta, cumulative 1.000
+```
+
+### ECMVAE’s orthogonality (difference) loss
+
+1. Each modality’s latent is split into a shared code c (the sound producer) and specific codes s_a, s_v (background noise, scene appearance).
+2. L_diff = ‖cᵀs_a‖²_F + ‖cᵀs_v‖²_F + ‖s_aᵀs_v‖²_F. Each term is a sum of squared inner products between latent dimensions across the T frames.
+3. It is 0 exactly when the subspaces are orthogonal, so minimizing it pushes the codes to carry non-overlapping information (no leakage).
+
+```python
+import numpy as np
+rng = np.random.default_rng(31)
+T, L = 5, 16                                   # 5 frames, latent dim 16 (as in the paper)
+def l_diff(c, sa, sv):
+    f = lambda A, B: np.sum((A.T @ B) ** 2)    # squared Frobenius norm of A^T B
+    return f(c, sa) + f(c, sv) + f(sa, sv)
+
+c = rng.normal(size=(T, L))
+sa_leaky = c + 0.3 * rng.normal(size=(T, L))   # specific code copies the shared one
+sv_rand = rng.normal(size=(T, L))
+print("leaky codes     L_diff =", round(l_diff(c, sa_leaky, sv_rand), 1))
+
+Q, _ = np.linalg.qr(rng.normal(size=(3 * L, 3 * L)))     # build mutually orthogonal codes
+c_o, sa_o, sv_o = (Q[:T, i * L:(i + 1) * L] for i in range(3))
+B = np.linalg.qr(rng.normal(size=(T, T)))[0]             # orthonormal basis over frames
+c_o, sa_o, sv_o = B[:, :2] @ rng.normal(size=(2, L)), B[:, 2:4] @ rng.normal(size=(2, L)), B[:, 4:] @ rng.normal(size=(1, L))
+print("orthogonal codes L_diff =", round(l_diff(c_o, sa_o, sv_o), 6))
+```
+
+Output:
+
+```
+leaky codes     L_diff = 3334.0
+orthogonal codes L_diff = 0.0
+```
+
+### Fusing two experts: PoE vs MoE, and why JS divergence is bounded
+
+1. Product of experts (PoE): multiplying Gaussian experts gives a Gaussian with precision equal to the sum of the experts’ precisions. A confident but wrong expert dominates the result.
+2. Mixture of experts (MoE): average the densities. One bad expert only costs its weight, but the mixture is not Gaussian, so its KL to a prior has no closed form.
+3. JS divergence compares each distribution to their average M = ½(P + Q). It is bounded by log 2 and stays finite where KL blows up. ECMVAE uses a JS-based bound with a dynamic prior for this stability.
+
+```python
+import numpy as np
+# 1) PoE vs MoE for two 1-D Gaussian experts (audio: confident but wrong; visual: right but vague)
+mu = np.array([3.0, 0.0]); var = np.array([0.1, 1.0])
+prec = 1 / var
+poe_mu, poe_var = np.sum(prec * mu) / prec.sum(), 1 / prec.sum()
+print(f"PoE: mean={poe_mu:.2f} var={poe_var:.3f}   (pulled to the confident expert)")
+print(f"MoE: mean={mu.mean():.2f}  (bimodal; equal say for each expert)")
+
+# 2) KL vs JS when supports do not overlap
+P = np.array([0.5, 0.5, 0.0, 0.0]); Q = np.array([0.0, 0.0, 0.5, 0.5])
+def kl(a, b):
+    m = a > 0
+    return np.inf if np.any(b[m] == 0) else np.sum(a[m] * np.log(a[m] / b[m]))
+M = (P + Q) / 2
+print("KL(P||Q) =", kl(P, Q), "| JS(P,Q) =", round(0.5 * kl(P, M) + 0.5 * kl(Q, M), 4), "| log 2 =", round(np.log(2), 4))
+```
+
+Output:
+
+```
+PoE: mean=2.73 var=0.091   (pulled to the confident expert)
+MoE: mean=1.50  (bimodal; equal say for each expert)
+KL(P||Q) = inf | JS(P,Q) = 0.6931 | log 2 = 0.6931
+```
+
+### The Barber–Agakov mutual-information lower bound used by ECMVAE
+
+1. I(A; V) = H(A) − H(A | V). For any variational q(a | v): I ≥ E[log q(a | v)] + H(A), and the gap is E[KL(p(a|v) ‖ q(a|v))].
+2. ECMVAE fits q(sc_a | sc_v) as a Gaussian with an MLP-predicted mean and variance, and maximizes E[log q]. The audio encoder is frozen, so H(SC_a) is treated as a constant.
+3. Check on correlated Gaussians, where the true MI is −½ log(1 − ρ²): with the best Gaussian q the bound is tight, and a worse q gives a lower value.
+
+```python
+import numpy as np
+rng = np.random.default_rng(32)
+rho, n = 0.8, 400_000
+v = rng.standard_normal(n); a = rho * v + np.sqrt(1 - rho**2) * rng.standard_normal(n)
+true_mi = -0.5 * np.log(1 - rho**2)
+H_a = 0.5 * np.log(2 * np.pi * np.e)                         # entropy of N(0, 1)
+
+def ba(slope, var):                                          # q(a|v) = N(slope*v, var)
+    log_q = -0.5 * np.log(2 * np.pi * var) - (a - slope * v) ** 2 / (2 * var)
+    return log_q.mean() + H_a
+print(f"true MI          = {true_mi:.4f}")
+print(f"BA, optimal q    = {ba(rho, 1 - rho**2):.4f}")
+print(f"BA, sloppy q     = {ba(0.5, 1.0):.4f}")
+```
+
+Output:
+
+```
+true MI          = 0.5108
+BA, optimal q    = 0.5110
+BA, sloppy q     = 0.2747
 ```
 
 ## Class 3 · Autoencoders & VAEs
