@@ -1,6 +1,6 @@
 # SEAS 8525 Generative AI Question Bank
 
-178 questions from Classes 1–7 and the SimCLR paper.
+206 questions from Classes 1–7 and the SimCLR paper.
 
 - ○ = single answer (exactly one correct)
 - ☐ = select all that apply (two or more correct)
@@ -1573,6 +1573,41 @@ Encoding to areas gives more diversity and avoids discontinuities. The constrain
 - ○ **C.** Effectiveness
 - ○ **D.** Fluency
 
+**Q109.** ○ *Single answer.* During GPT-style training, a student forgets to apply the causal mask. Training loss drops much faster than usual. What happens at generation time?
+
+- ○ **A.** Generation becomes faster because each step can skip computing the full attention matrix over previous tokens
+- ○ **B.** Nothing changes, because positional encodings already enforce ordering
+- ○ **C.** Generation works better because the model learned bidirectional context
+- ○ **D.** Quality collapses: training let it read the next token, a shortcut that is absent at generation
+
+**Q110.** ○ *Single answer.* An attention layer uses d_k = 1024 and the student removes the 1/√d_k scaling. What is the most likely training symptom?
+
+- ○ **A.** Attention rows no longer sum to 1
+- ○ **B.** Near one-hot attention with tiny gradients, so training stalls
+- ○ **C.** Attention becomes uniform over all positions
+- ○ **D.** The attention matrix changes shape from (n, n) to (n, d_k), which breaks the matrix multiplication with V
+
+**Q111.** ○ *Single answer.* A Transformer encoder is trained with no positional encoding at all. You feed it “dog bites man” and “man bites dog”. What do you observe?
+
+- ○ **A.** Outputs that are all identical vectors
+- ○ **B.** The same set of output vectors, just permuted, so the two sentences cannot be told apart
+- ○ **C.** A runtime error, since the attention layer requires a position embedding as a mandatory input to compute keys
+- ○ **D.** Different outputs, because attention weights depend on word order
+
+**Q112.** ○ *Single answer.* A student replaces “concatenate heads, then multiply by W_O” with “average the head outputs”. What is lost?
+
+- ○ **A.** Nothing; averaging and W_O are equivalent
+- ○ **B.** The causal mask
+- ○ **C.** The softmax normalization inside each head, which only works when the heads are concatenated afterward
+- ○ **D.** The learned mixing of head subspaces; each head’s output also shrinks to d_model/h dimensions
+
+**Q113.** ☐ *Select all that apply.* A BERT-style encoder and a GPT-style decoder each process “the bank by the river”. Which statements are correct? Select all that apply.
+
+- ☐ **A.** In GPT, the representation of “bank” cannot use “river”, because it comes later
+- ☐ **B.** In BERT, the representation of “bank” can use the word “river”
+- ☐ **C.** GPT’s attention weight matrix is lower-triangular
+- ☐ **D.** BERT’s attention matrix is always symmetric, since every token attends to every other token equally
+
 
 ### Answer key — Class 4 · Transformers
 
@@ -1804,33 +1839,78 @@ The four criteria: effectiveness, generalization, specificity and fluency.
 - C: ✗ Effectiveness means the new fact wins over the old one.
 - D: ✗ Fluency is about natural post-edit text.
 
+**Q109 → D**
+
+With teacher forcing, the input at position t+1 is the target at position t. Without the mask, the attention at t can read that input and copy it, so the loss falls toward 0. At inference, position t+1 is empty until the model predicts it, so the copying strategy fails. This mismatch is a classic data leak.
+
+- A: ✗ Speed is unrelated. The mask changes what the model learns.
+- B: ✗ Positional encodings say where a token is. They do not stop attention from reading the future.
+- C: ✗ At generation the future tokens do not exist yet, so the model cannot use what it learned.
+- D: ✓ Correct. The low loss came from a leak, not from learning.
+
+**Q110 → B**
+
+Var(q·k) ≈ d_k for unit-variance components, so the standard deviation is 32 at d_k = 1024. The softmax of such logits is essentially an argmax, whose Jacobian is nearly 0. The ‘Why divide by √d_k’ code panel shows the maximum weight going from 0.29 (scaled) to 1.00 (raw) at d_k = 512.
+
+- A: ✗ Softmax always makes rows sum to 1, scaled or not.
+- B: ✓ Correct. Logit variance grows to about 1,024, which saturates the softmax.
+- C: ✗ The opposite. Large logits make attention extremely peaked.
+- D: ✗ Scaling multiplies by a constant. Shapes are unchanged.
+
+**Q111 → B**
+
+Permuting the rows of X permutes Q, K and V the same way. The weight matrix gets its rows and columns permuted, so each output row is the same vector at a new index. Pooling over tokens (e.g., a mean) would then give identical sentence embeddings. An RNN does not have this problem, because it reads tokens in order.
+
+- A: ✗ Different words still get different vectors.
+- B: ✓ Correct. Self-attention is permutation-equivariant.
+- C: ✗ It runs fine, but it is blind to order.
+- D: ✗ Without positions, attention depends only on content, and the content here is identical.
+
+**Q112 → D**
+
+Concatenating gives an (n, h·d_head) matrix, and W_O learns how to combine the heads. Averaging forces equal weights and drops the dimensional layout, so the model cannot route ‘syntax-head’ and ‘coreference-head’ information to different output features.
+
+- A: ✗ Averaging is one fixed, specific choice of W_O.
+- B: ✗ Masking is separate from how heads are combined.
+- C: ✗ The softmax happens inside each head and is unaffected.
+- D: ✓ Correct.
+
+**Q113 → A, B, C**
+
+This is why BERT is strong at understanding tasks such as disambiguation and NER, and GPT is natural for generation. In GPT, “bank” can only be disambiguated by tokens after it, inside those later tokens’ own representations.
+
+- A: ✓ Correct. The causal mask blocks future tokens.
+- B: ✓ Correct. Encoder attention is bidirectional.
+- C: ✓ Correct. Masked positions get weight 0.
+- D: ✗ Attending in both directions does not make weights symmetric. q_i·k_j ≠ q_j·k_i in general.
+
 
 ---
 
 ## Class 5 · Autoregressive Models
 
-**Q109.** ○ *Single answer.* How do autoregressive models differ from VAEs?
+**Q114.** ○ *Single answer.* How do autoregressive models differ from VAEs?
 
 - ○ **A.** They are implicit models with no density, trained adversarially against a discriminator network
 - ○ **B.** They factor p(x) as ∏ p(x_t | x_<t) and model the exact distribution, not a bound
 - ○ **C.** They condition each prediction on a latent random variable
 - ○ **D.** They generate the whole output in one parallel step
 
-**Q110.** ☐ *Select all that apply.* Three ways of combining positional information with token embeddings were discussed. Which statements are correct? Select all that apply.
+**Q115.** ☐ *Select all that apply.* Three ways of combining positional information with token embeddings were discussed. Which statements are correct? Select all that apply.
 
 - ☐ **A.** Learned: trainable position embeddings, as in ViT
 - ☐ **B.** The magnitude of the position vector does not matter, since attention normalizes everything
 - ☐ **C.** Additive: the position vector is added element-wise; the dimension is unchanged
 - ☐ **D.** Concatenation: position and token vectors are stacked, which increases the dimension
 
-**Q111.** ☐ *Select all that apply.* In the RNN computational graph (Goodfellow et al.), which roles do U, W and V play? Select all that apply.
+**Q116.** ☐ *Select all that apply.* In the RNN computational graph (Goodfellow et al.), which roles do U, W and V play? Select all that apply.
 
 - ☐ **A.** V: hidden-to-output weights
 - ☐ **B.** U, W and V are separate matrices at every time step, so the parameter count grows with sequence length
 - ☐ **C.** U: input-to-hidden weights
 - ☐ **D.** W: hidden-to-hidden recurrent weights
 
-**Q112.** ☐ *Select all that apply.* Which statements about Backpropagation Through Time (BPTT) are correct? Select all that apply.
+**Q117.** ☐ *Select all that apply.* Which statements about Backpropagation Through Time (BPTT) are correct? Select all that apply.
 
 - ☐ **A.** BPTT avoids vanishing gradients because the gradients are summed across time steps rather than multiplied
 - ☐ **B.** Because weights are shared, gradients from every time step are summed for each parameter
@@ -1838,28 +1918,28 @@ The four criteria: effectiveness, generalization, specificity and fluency.
 - ☐ **D.** Loss can be computed at each step or only at the final step, depending on the task
 - ☐ **E.** The gradient at time t includes terms from future time steps
 
-**Q113.** ☐ *Select all that apply.* Which statements about LSTM gates are correct? Select all that apply.
+**Q118.** ☐ *Select all that apply.* Which statements about LSTM gates are correct? Select all that apply.
 
 - ☐ **A.** The forget gate sets the self-loop weight of the cell state through a sigmoid, between 0 and 1
 - ☐ **B.** The output gate can shut off the cell’s output h_t
 - ☐ **C.** All gates use ReLU activations, so that their outputs are unbounded and the gradients cannot saturate
 - ☐ **D.** The input gate decides how much new information is written to the cell state
 
-**Q114.** ○ *Single answer.* In a GRU, what happens when the reset gate is close to 0?
+**Q119.** ○ *Single answer.* In a GRU, what happens when the reset gate is close to 0?
 
 - ○ **A.** The GRU becomes an LSTM with three separate gates, gaining a dedicated output gate on the hidden state
 - ○ **B.** The output h_t is forced to zero for that step, regardless of what the update gate says
 - ○ **C.** The previous hidden state is copied unchanged to the next step
 - ○ **D.** The candidate state ignores the previous hidden state and resets using only the current input
 
-**Q115.** ○ *Single answer.* Luong et al. (2015) compared global and local attention for neural machine translation. Which statement is correct?
+**Q120.** ○ *Single answer.* Luong et al. (2015) compared global and local attention for neural machine translation. Which statement is correct?
 
 - ○ **A.** Attention reduced BLEU compared to non-attentional systems
 - ○ **B.** Local attention predicts an aligned position p_t and attends to a small window around it
 - ○ **C.** Global attention attends to a fixed-size window; local attention attends to all source words
 - ○ **D.** Local attention always gives blurrier alignments than global attention, because a small window spreads weight more evenly
 
-**Q116.** ☐ *Select all that apply.* PixelCNN uses masked convolutions. Which statements are correct? Select all that apply.
+**Q121.** ☐ *Select all that apply.* PixelCNN uses masked convolutions. Which statements are correct? Select all that apply.
 
 - ☐ **A.** Pixels are generated in raster-scan order, row by row and left to right
 - ☐ **B.** The Type B mask, used in later layers, includes the center position
@@ -1867,56 +1947,56 @@ The four criteria: effectiveness, generalization, specificity and fluency.
 - ☐ **D.** The Type A mask, used in the first layer, excludes the center pixel and all later pixels
 - ☐ **E.** Masks are binary matrices multiplied element-wise with the filters
 
-**Q117.** ○ *Single answer.* Why can a Type B mask include the center pixel without breaking the autoregressive property?
+**Q122.** ○ *Single answer.* Why can a Type B mask include the center pixel without breaking the autoregressive property?
 
 - ○ **A.** Because later layers are frozen during training and therefore cannot leak information about future pixels
 - ○ **B.** It does break the property, but the error is small
 - ○ **C.** After a Type A first layer, the center feature already depends only on earlier pixels
 - ○ **D.** Because the center pixel is always zero after the first layer’s ReLU, so including it adds nothing
 
-**Q118.** ○ *Single answer.* Using the sentence “I went to the bank to withdraw money,” what can a self-attention head linking “bank” and “withdraw” achieve?
+**Q123.** ○ *Single answer.* Using the sentence “I went to the bank to withdraw money,” what can a self-attention head linking “bank” and “withdraw” achieve?
 
 - ○ **A.** It encodes the absolute position of “bank”
 - ○ **B.** It predicts the next token after “money” by attending only to the final word
 - ○ **C.** It disambiguates “bank” as a financial institution
 - ○ **D.** It establishes subject–verb agreement between “I” and “went”
 
-**Q119.** ○ *Single answer.* In an LSTM, which component carries information across long time spans through a linear self-loop?
+**Q124.** ○ *Single answer.* In an LSTM, which component carries information across long time spans through a linear self-loop?
 
 - ○ **A.** The cell (state) unit s_t, whose self-loop weight is set by the forget gate
 - ○ **B.** The output gate, which stores the previous output h_{t−1} and feeds it back unchanged
 - ○ **C.** The softmax output layer, which keeps a running average of past predictions over time
 - ○ **D.** The input feature unit, which uses a ReLU so that its activations never saturate across long time spans
 
-**Q120.** ○ *Single answer.* Why is encoding an entire past sequence into one RNN hidden vector problematic?
+**Q125.** ○ *Single answer.* Why is encoding an entire past sequence into one RNN hidden vector problematic?
 
 - ○ **A.** The hidden vector cannot be updated after the first time step
 - ○ **B.** A single vector is an inefficient bottleneck, and most of its context is irrelevant to the next step
 - ○ **C.** The hidden vector grows linearly with the sequence length, which quickly exhausts the available GPU memory
 - ○ **D.** RNNs cannot process text
 
-**Q121.** ○ *Single answer.* A sequence-to-sequence RNN with attention translates “A B C D” into “X Y Z <eos>”. What does the <eos> token do?
+**Q126.** ○ *Single answer.* A sequence-to-sequence RNN with attention translates “A B C D” into “X Y Z <eos>”. What does the <eos> token do?
 
 - ○ **A.** It indicates an unknown word that was not in the vocabulary when the model was trained
 - ○ **B.** It marks the end of the sentence so the decoder knows when to stop
 - ○ **C.** It is the attention context vector
 - ○ **D.** It encodes the absolute position of the last source word so that local attention can center its window
 
-**Q122.** ○ *Single answer.* PixelCNN outputs, for each pixel, what kind of prediction?
+**Q127.** ○ *Single answer.* PixelCNN outputs, for each pixel, what kind of prediction?
 
 - ○ **A.** A probability distribution over the pixel’s values given earlier pixels
 - ○ **B.** A noise estimate as in diffusion
 - ○ **C.** A single deterministic pixel value with no uncertainty
 - ○ **D.** A latent vector for a VAE decoder, which then reconstructs the full image in one forward pass
 
-**Q123.** ○ *Single answer.* A GRU’s update gate u_t close to 1 (in the Goodfellow formulation) means
+**Q128.** ○ *Single answer.* A GRU’s update gate u_t close to 1 (in the Goodfellow formulation) means
 
 - ○ **A.** the previous hidden state is mostly copied forward
 - ○ **B.** the reset gate is disabled and the GRU behaves like a plain feed-forward layer for that step
 - ○ **C.** the state is fully replaced by the new candidate
 - ○ **D.** the output is zero
 
-**Q124.** ☐ *Select all that apply.* Which are typical applications of LSTMs? Select all that apply.
+**Q129.** ☐ *Select all that apply.* Which are typical applications of LSTMs? Select all that apply.
 
 - ☐ **A.** Time-series forecasting
 - ☐ **B.** Audio classification
@@ -1924,17 +2004,52 @@ The four criteria: effectiveness, generalization, specificity and fluency.
 - ☐ **D.** Computing exact image likelihoods by modeling pixels with masked convolutions in raster order
 - ☐ **E.** Text generation
 
-**Q125.** ○ *Single answer.* In ViT, how are learned positional embeddings handled?
+**Q130.** ○ *Single answer.* In ViT, how are learned positional embeddings handled?
 
 - ○ **A.** They are computed from pixel coordinates by a CNN
 - ○ **B.** They are fixed sinusoids
 - ○ **C.** They are concatenated to each patch embedding, which doubles the model width for every layer
 - ○ **D.** They are trainable vectors, the same size as the patch embeddings, added to them
 
+**Q131.** ○ *Single answer.* A student builds a PixelCNN and uses a Type A mask in every layer, not just the first. What is the most likely consequence?
+
+- ○ **A.** Still valid, but it wastes context: each layer drops info from the pixel directly to the left
+- ○ **B.** The softmax over the 256 pixel values can no longer be normalized, because masked weights are exactly zero
+- ○ **C.** The model can see the pixel it predicts and learns to copy it
+- ○ **D.** The model generates pixels column by column
+
+**Q132.** ○ *Single answer.* An LSTM’s forget-gate bias is initialized to a large negative value (e.g., −5). What is the most likely effect early in training?
+
+- ○ **A.** The cell keeps information for a very long time
+- ○ **B.** The cell wipes its state each step, so the LSTM behaves like a short-memory RNN
+- ○ **C.** The output gate takes over the forgetting role automatically, because the gates share their parameters
+- ○ **D.** Training diverges because gradients explode
+
+**Q133.** ○ *Single answer.* To save memory, a student uses truncated BPTT with a window of 20 steps on sequences of length 500. What is the main limitation?
+
+- ○ **A.** Gradients flow back at most 20 steps, so longer dependencies cannot be learned directly
+- ○ **B.** The forward pass can no longer process sequences longer than 20
+- ○ **C.** Parameter sharing is lost, because each 20-step window learns its own separate copy of the weights
+- ○ **D.** The loss can only be computed at the last step
+
+**Q134.** ○ *Single answer.* In a GRU (Goodfellow convention, h_t = u ⊙ h_{t−1} + (1 − u) ⊙ h̃), the update gate saturates at u ≈ 1 for all units. What happens?
+
+- ○ **A.** The state is replaced by the new candidate at every step
+- ○ **B.** The state is frozen: inputs barely affect it, but gradients pass back easily
+- ○ **C.** The GRU becomes identical to an LSTM
+- ○ **D.** The reset gate takes over and copies the input directly into the hidden state without any nonlinearity
+
+**Q135.** ○ *Single answer.* An RNN language model is trained with BPTT, and the gradient norm suddenly spikes to 1e6 on a few batches. Which fix targets this directly?
+
+- ○ **A.** Use a Type A mask
+- ○ **B.** Remove the tanh nonlinearity so that the hidden state is a purely linear function of the inputs over time
+- ○ **C.** Increase the learning rate
+- ○ **D.** Gradient clipping: rescale the gradient when its norm exceeds a threshold
+
 
 ### Answer key — Class 5 · Autoregressive Models
 
-**Q109 → B**
+**Q114 → B**
 
 Autoregressive models turn generation into a sequential process conditioned on previous values (word by word or pixel by pixel), with explicit modeling of the data-generating distribution. VAEs instead optimize the ELBO approximation.
 
@@ -1943,7 +2058,7 @@ Autoregressive models turn generation into a sequential process conditioned on p
 - C: ✗ That describes VAEs.
 - D: ✗ Generation is sequential, one token or pixel at a time.
 
-**Q110 → A, C, D**
+**Q115 → A, C, D**
 
 Design criteria: positions must be distinct; magnitudes must be controlled; and the method should balance mixing information against computational complexity. Example: “Engineer” −0.9748 + position 0.1566 = −0.8182 under the additive scheme.
 
@@ -1952,7 +2067,7 @@ Design criteria: positions must be distinct; magnitudes must be controlled; and 
 - C: ✓ Correct.
 - D: ✓ Correct.
 
-**Q111 → A, C, D**
+**Q116 → A, C, D**
 
 h_t = tanh(b + W h_{t−1} + U x_t), o_t = c + V h_t, ŷ_t = softmax(o_t). The loss compares ŷ_t to the target y_t at each step.
 
@@ -1961,7 +2076,7 @@ h_t = tanh(b + W h_{t−1} + U x_t), o_t = c + V h_t, ŷ_t = softmax(o_t). The l
 - C: ✓ Correct.
 - D: ✓ Correct.
 
-**Q112 → B, C, D, E**
+**Q117 → B, C, D, E**
 
 Long sequences (over 1,000 tokens) need about 1,000 matrix products forward and another 1,000 backward, which brings memory pressure and numerical instability. These are the motivations for LSTMs and attention.
 
@@ -1971,7 +2086,7 @@ Long sequences (over 1,000 tokens) need about 1,000 matrix products forward and 
 - D: ✓ Correct.
 - E: ✓ Correct, because h_t affects all later hidden states and losses.
 
-**Q113 → A, B, D**
+**Q118 → A, B, D**
 
 The linear self-loop of the cell state, gated by the forget gate, lets gradients flow over hundreds of steps, which addresses the vanishing gradient problem (Hochreiter & Schmidhuber, 1997). Applications: time-series forecasting, sentiment analysis, audio classification, text generation.
 
@@ -1980,7 +2095,7 @@ The linear self-loop of the cell state, gated by the forget gate, lets gradients
 - C: ✗ Gates use sigmoids so their values lie in (0, 1). The input unit can use any squashing nonlinearity, e.g., tanh.
 - D: ✓ Correct.
 
-**Q114 → D**
+**Q119 → D**
 
 A GRU has two gates. The update gate u controls how much of the previous state carries over (it plays the roles of forget and input gate together). The reset gate r controls which parts of the past state feed into the candidate state, which lets the GRU drop information that turns out to be irrelevant.
 
@@ -1989,7 +2104,7 @@ A GRU has two gates. The update gate u controls how much of the previous state c
 - C: ✗ Copying is controlled by the update gate.
 - D: ✓ Correct.
 
-**Q115 → B**
+**Q120 → B**
 
 Global: a variable-length alignment vector over all source states, with dot-product scoring working best. Local: monotonic or predictive variants, with the general scoring function best for predictive alignment; the context vector comes only from the window.
 
@@ -1998,7 +2113,7 @@ Global: a variable-length alignment vector over all source states, with dot-prod
 - C: ✗ This is reversed.
 - D: ✗ Local attention gives sharper alignments with limited context; global attention tends to be blurrier.
 
-**Q116 → A, B, D, E**
+**Q121 → A, B, D, E**
 
 PixelCNN is trained autoregressively, using masked conv layers to enforce ordering and residual blocks (skip connections) for depth. Each pixel is conditioned only on previously generated pixels.
 
@@ -2008,7 +2123,7 @@ PixelCNN is trained autoregressively, using masked conv layers to enforce orderi
 - D: ✓ Correct. The prediction cannot depend on the pixel’s own value.
 - E: ✓ Correct.
 
-**Q117 → C**
+**Q122 → C**
 
 Information about pixel i itself enters only through the input. The Type A mask blocks it at the first layer, and every later feature at position i aggregates only from predecessors, so Type B layers can safely use the center.
 
@@ -2017,7 +2132,7 @@ Information about pixel i itself enters only through the input. The Type A mask 
 - C: ✓ Correct.
 - D: ✗ Pixels are not zero in general.
 
-**Q118 → C**
+**Q123 → C**
 
 The mechanism: the query for “bank” scores high against the key for “withdraw”, so the value of “withdraw” is mixed into bank’s new representation, moving it toward the finance sense. Other heads can capture other relations, e.g., head 1 links I–went (actor); head 2 went–to the bank (destination); head 3 bank–withdraw (purpose); head 4 withdraw–money (action–object); head 5 bank–withdraw for contextual meaning. Different heads capture different relations at the same time.
 
@@ -2026,7 +2141,7 @@ The mechanism: the query for “bank” scores high against the key for “withd
 - C: ✓ Correct.
 - D: ✗ That is a different head’s pattern.
 
-**Q119 → A**
+**Q124 → A**
 
 s_t = f_t ⊙ s_{t−1} + g_t ⊙ (input feature). Because this update is additive, with a gate-controlled linear self-loop, gradients can flow across many steps when f_t ≈ 1. The gating units can also take s_{t−1} as an extra input (peephole connections).
 
@@ -2035,7 +2150,7 @@ s_t = f_t ⊙ s_{t−1} + g_t ⊙ (input feature). Because this update is additi
 - C: ✗ Not part of the recurrence.
 - D: ✗ The input unit computes candidate content. It does not carry memory across time.
 
-**Q120 → B**
+**Q125 → B**
 
 A fixed-size vector has fixed capacity, so as the sequence grows, old information must be overwritten. Gradients to early steps also vanish (see the BPTT code). Attention keeps every past state and retrieves only the relevant ones on demand.
 
@@ -2044,7 +2159,7 @@ A fixed-size vector has fixed capacity, so as the sequence grows, old informatio
 - C: ✗ The hidden vector has a fixed size. That fixed size is the problem.
 - D: ✗ They can. LSTMs are used for text generation and sentiment analysis.
 
-**Q121 → B**
+**Q126 → B**
 
 Autoregressive decoders generate until they emit <eos>. This lets them produce variable-length outputs, as in Luong et al.’s stacked recurrent NMT architecture.
 
@@ -2053,7 +2168,7 @@ Autoregressive decoders generate until they emit <eos>. This lets them produce v
 - C: ✗ The context vector is computed from source states, not a token.
 - D: ✗ It is a vocabulary symbol, not a positional encoding.
 
-**Q122 → A**
+**Q127 → A**
 
 Generation samples one pixel at a time from p(x_i | x_<i) in raster order, feeding each new pixel back in. This is slow but gives an exact likelihood.
 
@@ -2062,7 +2177,7 @@ Generation samples one pixel at a time from p(x_i | x_<i) in raster order, feedi
 - C: ✗ Autoregressive models output distributions to sample from.
 - D: ✗ PixelCNN has no latent variable.
 
-**Q123 → A**
+**Q128 → A**
 
 h_t = u ⊙ h_{t−1} + (1 − u) ⊙ candidate. Update gates can copy dimensions or replace them with the target state at the sigmoid extremes. Conventions differ between sources, so check which one the exam uses.
 
@@ -2071,7 +2186,7 @@ h_t = u ⊙ h_{t−1} + (1 − u) ⊙ candidate. Update gates can copy dimension
 - C: ✗ In Goodfellow’s notation, u near 1 keeps the old state.
 - D: ✗ Not what the gate does.
 
-**Q124 → A, B, C, E**
+**Q129 → A, B, C, E**
 
 Advantages: learning long-term dependencies, robustness to vanishing gradients, a flexible architecture, and wide framework support (Keras LSTM and GRU layers).
 
@@ -2081,7 +2196,7 @@ Advantages: learning long-term dependencies, robustness to vanishing gradients, 
 - D: ✗ That describes PixelCNN.
 - E: ✓ Correct.
 
-**Q125 → D**
+**Q130 → D**
 
 Class 5 uses ViT as the example of learned positional embeddings: initialized as parameters and optimized with the rest of the model.
 
@@ -2090,82 +2205,127 @@ Class 5 uses ViT as the example of learned positional embeddings: initialized as
 - C: ✗ They are added, not concatenated.
 - D: ✓ Correct.
 
+**Q131 → A**
+
+After layer 1, the center feature at position i depends only on pixels before i, so it is safe to read. Mask A in later layers blocks that safe information. Each extra Type A layer removes the immediate predecessor from what the next layer can use, so dependencies that should take one hop are lost. The code panel prints both masks.
+
+- A: ✓ Correct. The order stays valid, but the receptive field gains a blind region and the model weakens.
+- B: ✗ Masking the filters does not affect the output softmax.
+- C: ✗ Type A masks hide the center, so nothing can be copied. That failure comes from Type B in the first layer.
+- D: ✗ The mask shape defines raster order. Using Type A everywhere does not change the order.
+
+**Q132 → B**
+
+c_t = f ⊙ c_{t−1} + i ⊙ g. With f ≈ 0, c_t ≈ i ⊙ g, so nothing carries over. This is why practitioners usually initialize the forget bias positive (e.g., +1), the opposite of this scenario. The LSTM code panel uses a +6 bias to show the cell state persisting across 100 steps.
+
+- A: ✗ A sigmoid of −5 is about 0.007. The gate is nearly closed, which means forgetting.
+- B: ✓ Correct. Gradients through the cell path are multiplied by f ≈ 0.
+- C: ✗ Each gate has its own parameters.
+- D: ✗ A near-zero multiplier makes gradients vanish, not explode.
+
+**Q133 → A**
+
+Truncation cuts the backward graph. The state h is passed forward but treated as a constant at the window boundary, so ∂L/∂(earlier steps) is never computed. This saves memory and avoids the long Jacobian products, at the cost of a dependency horizon of about 20.
+
+- A: ✓ Correct.
+- B: ✗ The hidden state can still be carried forward across windows.
+- C: ✗ The weights are still shared everywhere.
+- D: ✗ The loss is still computed at every step.
+
+**Q134 → B**
+
+This is the GRU version of an LSTM with forget ≈ 1 and input ≈ 0: perfect memory, no new information. Learning lives between these extremes. The GRU code panel shows u = 0.999 returning h_prev unchanged.
+
+- A: ✗ That would be u ≈ 0.
+- B: ✓ Correct. ∂h_t/∂h_{t−1} ≈ I.
+- C: ✗ No.
+- D: ✗ The reset gate only shapes the candidate h̃.
+
+**Q135 → D**
+
+Exploding gradients come from products of Jacobians with norm above 1. They are rare but catastrophic. Clipping keeps the direction and bounds the magnitude. Vanishing gradients need architectural fixes instead (LSTM, GRU, attention, residual connections).
+
+- A: ✗ That is a PixelCNN concept.
+- B: ✗ A linear RNN explodes or vanishes even more readily, through powers of W.
+- C: ✗ That would amplify the explosion.
+- D: ✓ Correct. It caps the size of the step.
+
 
 ---
 
 ## Class 6 · Multimodal LLMs
 
-**Q126.** ○ *Single answer.* How does Byte Pair Encoding (BPE) build its vocabulary?
+**Q136.** ○ *Single answer.* How does Byte Pair Encoding (BPE) build its vocabulary?
 
 - ○ **A.** It clusters words by embedding similarity using k-means, then assigns each cluster a single shared token id
 - ○ **B.** It splits text into fixed 4-character chunks and assigns each distinct chunk its own token id
 - ○ **C.** It starts from single characters and repeatedly merges the most frequent adjacent pair
 - ○ **D.** It assigns one token to each whole word in the training corpus
 
-**Q127.** ☐ *Select all that apply.* Which statements about GPT-2’s adaptive input representations and adaptive softmax are correct? Select all that apply.
+**Q137.** ☐ *Select all that apply.* Which statements about GPT-2’s adaptive input representations and adaptive softmax are correct? Select all that apply.
 
 - ☐ **A.** Adaptive softmax clusters the vocabulary by frequency to cut the cost of the output layer
 - ☐ **B.** In the 10,000-word example, the 100 most frequent words form the first cluster and are updated most often
 - ☐ **C.** Adaptive softmax computes the exact full softmax over the vocabulary, only reordering words so the frequent ones are cached
 - ☐ **D.** Adaptive input gives frequent words larger embeddings and rare words smaller ones
 
-**Q128.** ☐ *Select all that apply.* Which statements about the Vision Transformer (ViT) are correct? Select all that apply.
+**Q138.** ☐ *Select all that apply.* Which statements about the Vision Transformer (ViT) are correct? Select all that apply.
 
 - ☐ **A.** Images are split into fixed patches (e.g., 16×16) and linearly projected
 - ☐ **B.** Layer norm comes before each block, residuals after, and the MLP has two layers with GELU
 - ☐ **C.** ViT keeps CNN inductive biases such as locality and translation equivariance in every layer
 - ☐ **D.** A learnable [class] token is prepended, and learnable 1-D position embeddings are added
 
-**Q129.** ○ *Single answer.* ViT experiments compared 1-D, 2-D and relative positional embeddings. What did they find?
+**Q139.** ○ *Single answer.* ViT experiments compared 1-D, 2-D and relative positional embeddings. What did they find?
 
 - ○ **A.** All three performed similarly; learned 1-D embeddings still captured 2-D structure
 - ○ **B.** 2-D embeddings were essential; 1-D embeddings failed to learn any spatial structure
 - ○ **C.** Relative embeddings dramatically outperformed the alternatives by more than ten points of ImageNet accuracy
 - ○ **D.** Removing positional embeddings had no effect at all
 
-**Q130.** ○ *Single answer.* Mean attention distance in ViT, measured across layers, shows which pattern?
+**Q140.** ○ *Single answer.* Mean attention distance in ViT, measured across layers, shows which pattern?
 
 - ○ **A.** Early layers mix local and global heads; late layers are mostly global
 - ○ **B.** Distance decreases with depth, so the final layers attend only to each patch’s immediate neighbors
 - ○ **C.** All heads in all layers attend only to neighboring patches
 - ○ **D.** Distance is constant across layers
 
-**Q131.** ○ *Single answer.* “QFormer” in the vision-transformer lecture (Zhang et al., 2024) refers to quadrangle attention. What does it change?
+**Q141.** ○ *Single answer.* “QFormer” in the vision-transformer lecture (Zhang et al., 2024) refers to quadrangle attention. What does it change?
 
 - ○ **A.** It removes self-attention entirely and uses learned geometric transforms of the image instead
 - ○ **B.** It replaces patches with individual pixels so that attention windows can take any shape
 - ○ **C.** It is the same module as BLIP-2’s Querying Transformer that bridges a frozen image encoder and a frozen LLM
 - ○ **D.** It learns a transform that deforms fixed square windows into quadrangles fitting objects
 
-**Q132.** ☐ *Select all that apply.* Which statements about CLIP’s training are correct? Select all that apply.
+**Q142.** ☐ *Select all that apply.* Which statements about CLIP’s training are correct? Select all that apply.
 
 - ☐ **A.** It jointly trains an image encoder and a text encoder to predict which image and text belong together in a batch
 - ☐ **B.** It uses a symmetric cross-entropy loss over cosine similarities between image and text embeddings
 - ☐ **C.** It is trained to generate captions autoregressively, since generation is more compute-efficient than contrastive learning
 - ☐ **D.** Its pretraining set, WIT, has about 400 million image–text pairs gathered with 500,000 queries
 
-**Q133.** ○ *Single answer.* How does CLIP perform zero-shot classification on a new dataset?
+**Q143.** ○ *Single answer.* How does CLIP perform zero-shot classification on a new dataset?
 
 - ○ **A.** It fine-tunes a linear head on a few labeled examples from the new dataset
 - ○ **B.** It uses k-means clustering on the image embeddings
 - ○ **C.** It embeds class names or descriptions with the text encoder and picks the class most similar to the image
 - ○ **D.** It retrains the image encoder on the new classes, freezing the text encoder so that the label space stays fixed
 
-**Q134.** ☐ *Select all that apply.* Which are known limitations and risks of CLIP? Select all that apply.
+**Q144.** ☐ *Select all that apply.* Which are known limitations and risks of CLIP? Select all that apply.
 
 - ☐ **A.** It cannot recognize text in images at all, failing even on MNIST digits and rendered sentiment text
 - ☐ **B.** It struggles with specialized tasks such as lymph-node tumor detection (PatchCamelyon)
 - ☐ **C.** Web-scraped training data can contain and amplify social biases
 - ☐ **D.** Flexible zero-shot classifiers could be misused, e.g., for unauthorized surveillance
 
-**Q135.** ○ *Single answer.* DALL·E 2 consists of three parts. What is the role of the prior?
+**Q145.** ○ *Single answer.* DALL·E 2 consists of three parts. What is the role of the prior?
 
 - ○ **A.** It converts the text prompt into a CLIP text embedding
 - ○ **B.** It generates the final pixels, conditioned on both the text prompt and the predicted image embedding
 - ○ **C.** It maps the CLIP text embedding to a predicted CLIP image embedding
 - ○ **D.** It filters unsafe prompts and rewrites them before they reach the text encoder and decoder
 
-**Q136.** ☐ *Select all that apply.* Which statements about BLIP and BLIP-2 are correct? Select all that apply.
+**Q146.** ☐ *Select all that apply.* Which statements about BLIP and BLIP-2 are correct? Select all that apply.
 
 - ☐ **A.** CapFilt generates synthetic captions and filters noisy web captions
 - ☐ **B.** BLIP-2 keeps the image encoder and the LLM frozen and trains a Q-Former between them
@@ -2173,21 +2333,21 @@ Class 5 uses ViT as the example of learned positional embeddings: initialized as
 - ☐ **D.** In BLIP-2, Q-Former outputs are projected and fed to the LLM as a soft visual prompt
 - ☐ **E.** BLIP-2 fine-tunes every weight of the vision transformer and the LLM end-to-end, since frozen components would block gradients
 
-**Q137.** ○ *Single answer.* Pic2Word addresses zero-shot composed image retrieval (CIR). How is its mapping network trained?
+**Q147.** ○ *Single answer.* Pic2Word addresses zero-shot composed image retrieval (CIR). How is its mapping network trained?
 
 - ○ **A.** On unlabeled images, mapping each frozen CLIP image embedding to a pseudo-word token
 - ○ **B.** On labeled triplets of (reference image, modification text, target image)
 - ○ **C.** By fine-tuning the whole CLIP model end-to-end on a large collection of sketches, cartoons and other domains
 - ○ **D.** With a GAN discriminator that judges whether the composed query looks like a real caption
 
-**Q138.** ☐ *Select all that apply.* Which statements about ScreenAI are correct? Select all that apply.
+**Q148.** ☐ *Select all that apply.* Which statements about ScreenAI are correct? Select all that apply.
 
 - ☐ **A.** It reaches state of the art on UI and infographic tasks with only 5B parameters
 - ☐ **B.** It combines the PaLI architecture with Pix2Struct’s flexible patching
 - ☐ **C.** It is a decoder-only model that skips the vision encoder and reads raw HTML source instead of screenshots
 - ☐ **D.** A textual screen schema from automatic annotation, plus LLM-generated tasks, provides pretraining data
 
-**Q139.** ☐ *Select all that apply.* Which statements about Flamingo’s architecture are correct? Select all that apply.
+**Q149.** ☐ *Select all that apply.* Which statements about Flamingo’s architecture are correct? Select all that apply.
 
 - ☐ **A.** A frozen NFNet-F6 vision encoder, pretrained with a CLIP-style contrastive loss, extracts features
 - ☐ **B.** The Perceiver Resampler maps variable-size visual features to a fixed set of 64 visual tokens
@@ -2195,56 +2355,56 @@ Class 5 uses ViT as the example of learned positional embeddings: initialized as
 - ☐ **D.** The gates use tanh(α) with α initialized to 0, so the model starts identical to the original LM
 - ☐ **E.** The language model is fully fine-tuned from scratch on interleaved image–text data so it can learn visual grounding
 
-**Q140.** ○ *Single answer.* Why are Flamingo’s cross-attention outputs multiplied by tanh(α) with α initialized to 0?
+**Q150.** ○ *Single answer.* Why are Flamingo’s cross-attention outputs multiplied by tanh(α) with α initialized to 0?
 
 - ○ **A.** To enforce sparsity in the attention weights, so each token attends to at most one visual token
 - ○ **B.** Because tanh is required for the softmax to be stable
 - ○ **C.** So the model starts out exactly like the frozen LM, for stable training
 - ○ **D.** To speed up inference by skipping the vision encoder at test time
 
-**Q141.** ☐ *Select all that apply.* Which are known limitations of Flamingo? Select all that apply.
+**Q151.** ☐ *Select all that apply.* Which are known limitations of Flamingo? Select all that apply.
 
 - ☐ **A.** In-context learning is sensitive to demonstration quality and scales poorly beyond the low-data regime
 - ☐ **B.** It inherits weaknesses of the pretrained LM, such as hallucinations and ungrounded guesses
 - ☐ **C.** It cannot process video at all, because the Perceiver Resampler only accepts a single still image per sequence
 - ☐ **D.** Its classification performance trails contrastive models optimized for image–text retrieval
 
-**Q142.** ○ *Single answer.* A multimodal embedding model such as CLIP is valuable mainly because it
+**Q152.** ○ *Single answer.* A multimodal embedding model such as CLIP is valuable mainly because it
 
 - ○ **A.** generates high-resolution images directly from text without any decoder or prior network
 - ○ **B.** requires no training data, because the embeddings come from a fixed, hand-designed feature extractor
 - ○ **C.** puts several modalities in one shared, directly comparable vector space
 - ○ **D.** stores images and text in separate, incompatible vector spaces
 
-**Q143.** ○ *Single answer.* Why does the Perceiver Resampler help Flamingo?
+**Q153.** ○ *Single answer.* Why does the Perceiver Resampler help Flamingo?
 
 - ○ **A.** It fine-tunes the vision encoder, which would otherwise stay random because it is never pretrained
 - ○ **B.** It replaces the language model
 - ○ **C.** It increases the number of visual tokens for higher fidelity
 - ○ **D.** It turns any number of visual features into 64 tokens, cutting cross-attention cost
 
-**Q144.** ○ *Single answer.* How does Flamingo’s vision encoder differ from a CLIP ViT image encoder?
+**Q154.** ○ *Single answer.* How does Flamingo’s vision encoder differ from a CLIP ViT image encoder?
 
 - ○ **A.** They are identical
 - ○ **B.** Flamingo trains its encoder from scratch with a captioning loss, as part of the full model
 - ○ **C.** Flamingo uses a ViT, while CLIP uses no image encoder
 - ○ **D.** Flamingo uses a frozen NFNet-F6, trained with a CLIP-style contrastive loss
 
-**Q145.** ☐ *Select all that apply.* Which tasks does composed image retrieval (CIR) cover in Pic2Word? Select all that apply.
+**Q155.** ☐ *Select all that apply.* Which tasks does composed image retrieval (CIR) cover in Pic2Word? Select all that apply.
 
 - ☐ **A.** Object composition, e.g., adding or removing objects
 - ☐ **B.** Attribute editing, e.g., changing color or texture
 - ☐ **C.** Generating new pixels for the modified image with a diffusion decoder conditioned on the pseudo token
 - ☐ **D.** Domain conversion, e.g., real photo to sketch or cartoon
 
-**Q146.** ○ *Single answer.* Reported zero-shot CLIP robustness: by how much did it reduce the accuracy gap between ImageNet and natural-distribution-shift datasets?
+**Q156.** ○ *Single answer.* Reported zero-shot CLIP robustness: by how much did it reduce the accuracy gap between ImageNet and natural-distribution-shift datasets?
 
 - ○ **A.** By up to 75%
 - ○ **B.** It widened the gap
 - ○ **C.** By up to 10%
 - ○ **D.** It closed the gap completely on all seven shift datasets, so it reached 100% of ImageNet accuracy
 
-**Q147.** ○ *Single answer.* Compute for AI models other than Transformers grew by about 2× every 8 months. What is the takeaway for LLM training?
+**Q157.** ○ *Single answer.* Compute for AI models other than Transformers grew by about 2× every 8 months. What is the takeaway for LLM training?
 
 - ○ **A.** Any university lab can train GPT-3-scale models on a single GPU in a few days with standard tools
 - ○ **B.** Data is no longer a constraint
@@ -2254,7 +2414,7 @@ Class 5 uses ViT as the example of learned positional embeddings: initialized as
 
 ### Answer key — Class 6 · Multimodal LLMs
 
-**Q126 → C**
+**Q136 → C**
 
 Example: if “t”+“h” is the most frequent pair, it becomes the single symbol “th”. The process repeats thousands of times over the corpus. The final vocabulary ranges from single characters to multi-character sequences, so any string can be encoded.
 
@@ -2263,7 +2423,7 @@ Example: if “t”+“h” is the most frequent pair, it becomes the single sym
 - C: ✓ Correct. Subwords like “pre” and “ing” emerge.
 - D: ✗ Word-level vocabularies cannot handle unseen words. BPE builds subwords.
 
-**Q127 → A, B, D**
+**Q137 → A, B, D**
 
 Both techniques spend capacity and compute on the words that matter most, with minimal performance loss (Joulin et al., 2017). GPT-3 (175B parameters, June 2020) added sparse attention, multi-head refinements and pipeline optimizations.
 
@@ -2272,7 +2432,7 @@ Both techniques spend capacity and compute on the words that matter most, with m
 - C: ✗ It is an approximation. Rare words are handled through a cluster representation at level 1.
 - D: ✓ Correct.
 
-**Q128 → A, B, D**
+**Q138 → A, B, D**
 
 Hybrid alternatives apply self-attention to CNN feature maps or use local self-attention. A full Transformer over high-resolution pixels is computationally expensive, which is why ViT works on patches.
 
@@ -2281,7 +2441,7 @@ Hybrid alternatives apply self-attention to CNN feature maps or use local self-a
 - C: ✗ ViT lacks these biases, which is a key challenge and why it needs large-scale data.
 - D: ✓ Correct.
 
-**Q129 → A**
+**Q139 → A**
 
 Visualizations show 1-D embeddings assigning similar vectors to patches in the same row or column. 1-D embeddings are also the most computationally efficient, which is why they are the default.
 
@@ -2290,7 +2450,7 @@ Visualizations show 1-D embeddings assigning similar vectors to patches in the s
 - C: ✗ Differences were minimal.
 - D: ✗ The comparison was among embedding types. Some positional information still matters.
 
-**Q130 → A**
+**Q140 → A**
 
 Mean attention distance is the average image-space distance between a query patch and the patches it attends to, weighted by attention. It is loosely analogous to the receptive field size in CNNs. Global integration in late layers supports the final prediction, and attention maps highlight semantically relevant regions.
 
@@ -2299,7 +2459,7 @@ Mean attention distance is the average image-space distance between a query patc
 - C: ✗ Some heads attend globally even in early layers.
 - D: ✗ It changes systematically with depth.
 
-**Q131 → D**
+**Q141 → D**
 
 The transformation matrix is decomposed into scaling, shearing, rotation, translation and projection, which makes optimization easier. Benefits: adaptive regions, cross-window information exchange, and computational cost comparable to fixed-window ViTs. The hierarchical variant merges tokens at each stage while increasing channels.
 
@@ -2308,7 +2468,7 @@ The transformation matrix is decomposed into scaling, shearing, rotation, transl
 - C: ✗ This is a naming trap. BLIP-2’s Q-Former is a different model.
 - D: ✓ Correct.
 
-**Q132 → A, B, D**
+**Q142 → A, B, D**
 
 Steps: embed images and texts, compute cosine similarity, then update both encoders so matching pairs score high and mismatched pairs low. CLIP was trained with ResNet and ViT image encoders and a Transformer text encoder. The code below computes the symmetric loss and a zero-shot prediction.
 
@@ -2317,7 +2477,7 @@ Steps: embed images and texts, compute cosine similarity, then update both encod
 - C: ✗ The contrastive objective was chosen because it is more efficient than generative or autoregressive prediction.
 - D: ✓ Correct. There are up to 20,000 pairs per query for balance.
 
-**Q133 → C**
+**Q143 → C**
 
 Zero-shot CLIP is competitive with a fully supervised ResNet-50 linear probe across many datasets and matches 4-shot logistic regression. It is more robust to natural distribution shift, closing the ImageNet-to-shift-set gap by up to 75%. Fine-tuning on ImageNet reduces this robustness.
 
@@ -2326,7 +2486,7 @@ Zero-shot CLIP is competitive with a fully supervised ResNet-50 linear probe acr
 - C: ✓ Correct.
 - D: ✗ No training is involved in zero-shot transfer.
 
-**Q134 → B, C, D**
+**Q144 → B, C, D**
 
 Emergent capabilities from natural-language supervision include OCR, facial emotion recognition (comparable to humans on FER2013), action recognition (UCF101, Kinetics-700) and geolocalization. Future directions include larger and better data, better benchmarks, and responsible deployment.
 
@@ -2335,7 +2495,7 @@ Emergent capabilities from natural-language supervision include OCR, facial emot
 - C: ✓ Correct.
 - D: ✓ Correct.
 
-**Q135 → C**
+**Q145 → C**
 
 Pipeline: text encoder → prior → decoder. One version of the prior is an autoregressive encoder–decoder Transformer trained on CLIP text–image pairs to reproduce the CLIP image embedding from the CLIP text embedding. The paper also explores a diffusion prior. Providing the image embedding gives the decoder extra context and more accurate generations.
 
@@ -2344,7 +2504,7 @@ Pipeline: text encoder → prior → decoder. One version of the prior is an aut
 - C: ✓ Correct.
 - D: ✗ Not its role.
 
-**Q136 → A, B, C, D**
+**Q146 → A, B, C, D**
 
 BLIP-2 stage 1: representation learning, training the Q-Former on frozen ViT outputs plus captions with three contrastive-like objectives. Stage 2: generative learning, connecting to the frozen LLM through a projection layer. Earlier models handled either understanding (retrieval) or generation (captioning); BLIP unifies both.
 
@@ -2354,7 +2514,7 @@ BLIP-2 stage 1: representation learning, training the Q-Former on frozen ViT out
 - D: ✓ Correct.
 - E: ✗ Keeping both frozen is the point. Only the Q-Former and projection are trained.
 
-**Q137 → A**
+**Q147 → A**
 
 The mapping network f_M is trained with a contrastive loss so that the text embedding of the pseudo token s* reconstructs the image embedding. At inference: encode the query image, map it to s*, insert it into a prompt such as “a sketch of *”, and retrieve by cosine similarity. Applications include attribute editing, object composition and domain conversion.
 
@@ -2363,7 +2523,7 @@ The mapping network f_M is trained with a contrastive loss so that the text embe
 - C: ✗ CLIP stays frozen. Only the lightweight mapping network is trained.
 - D: ✗ No adversarial training.
 
-**Q138 → A, B, D**
+**Q148 → A, B, D**
 
 The annotation pipeline includes object detection, icon classification, OCR and image captioning. There is far more pretraining data than fine-tuning data. It achieves SOTA on MoTIF, Widget Captioning, MPDocVQA and WebSRC, leads ChartQA, DocVQA and InfographicVQA, and introduces new benchmarks (Screen Annotation, ScreenQA Short, Complex ScreenQA).
 
@@ -2372,7 +2532,7 @@ The annotation pipeline includes object detection, icon classification, OCR and 
 - C: ✗ It is an encoder–decoder model with a ViT image encoder and an mT5/UL2 language encoder.
 - D: ✓ Correct.
 
-**Q139 → A, B, C, D**
+**Q149 → A, B, C, D**
 
 Video frames are sampled at 1 FPS with learned temporal embeddings, then flattened. Image-causal masking lets each text token cross-attend only to the image immediately before it, while LM self-attention keeps dependencies on earlier images. Trained with up to 5 images, it generalizes to 32 at evaluation, and it adapts to new tasks by few-shot prompting without fine-tuning.
 
@@ -2382,7 +2542,7 @@ Video frames are sampled at 1 FPS with learned temporal embeddings, then flatten
 - D: ✓ Correct.
 - E: ✗ The LM stays frozen. Only the new layers and the resampler are trained.
 
-**Q140 → C**
+**Q150 → C**
 
 The gate lets the model gradually learn how much visual information to inject, without disrupting the pretrained LM at the start of training. This idea of preserving pretrained knowledge while adding new conditioning recurs across multimodal models.
 
@@ -2391,7 +2551,7 @@ The gate lets the model gradually learn how much visual information to inject, w
 - C: ✓ Correct. tanh(0) = 0 means the new layers contribute nothing at first.
 - D: ✗ The vision path is still used.
 
-**Q141 → A, B, D**
+**Q151 → A, B, D**
 
 These limits follow from its design choices: a frozen LM (inherited priors), a generative objective rather than a contrastive one (weaker retrieval and classification), and reliance on few-shot prompting.
 
@@ -2400,7 +2560,7 @@ These limits follow from its design choices: a frozen LM (inherited priors), a g
 - C: ✗ Flamingo processes video frames sampled at 1 FPS.
 - D: ✓ Correct.
 
-**Q142 → C**
+**Q152 → C**
 
 Because images and text share one space, cosine similarity enables zero-shot classification, cross-modal retrieval and composed retrieval (Pic2Word). It can also be reused as the text encoder in DALL·E 2.
 
@@ -2409,7 +2569,7 @@ Because images and text share one space, cosine similarity enables zero-shot cla
 - C: ✓ Correct.
 - D: ✗ The point is a shared space.
 
-**Q143 → D**
+**Q153 → D**
 
 Learned latent queries cross-attend to the visual features. Ablations show it beats plain Transformer and MLP alternatives.
 
@@ -2418,7 +2578,7 @@ Learned latent queries cross-attend to the visual features. Ablations show it be
 - C: ✗ It reduces them to a fixed number.
 - D: ✓ Correct.
 
-**Q144 → D**
+**Q154 → D**
 
 NFNet-F6 is a convolutional network without batch norm; CLIP ViT is a Transformer over patches. Both are trained with the same contrastive objective. The encoder’s 2-D grid is flattened before the resampler.
 
@@ -2427,7 +2587,7 @@ NFNet-F6 is a convolutional network without batch norm; CLIP ViT is a Transforme
 - C: ✗ Both have image encoders.
 - D: ✓ Correct.
 
-**Q145 → A, B, D**
+**Q155 → A, B, D**
 
 The query is an image plus a text modification. Strengths: zero-shot generalization, cost-effectiveness, flexibility, scalability and interpretability (images become pseudo-words).
 
@@ -2436,7 +2596,7 @@ The query is an image plus a text modification. Strengths: zero-shot generalizat
 - C: ✗ CIR retrieves existing images from a database. It does not generate.
 - D: ✓ Correct.
 
-**Q146 → A**
+**Q156 → A**
 
 The seven shift datasets vary pose, background and renditions. Fine-tuning CLIP on ImageNet reduces this robustness.
 
@@ -2445,7 +2605,7 @@ The seven shift datasets vary pose, background and renditions. Fine-tuning CLIP 
 - C: ✗ Too small.
 - D: ✗ Not completely.
 
-**Q147 → C**
+**Q157 → C**
 
 The critical factors: compute and cost, scale of data, and the technical expertise for distributed systems and GPU management.
 
@@ -2459,7 +2619,7 @@ The critical factors: compute and cost, scale of data, and the technical experti
 
 ## Class 7 · Diffusion Models
 
-**Q148.** ☐ *Select all that apply.* Which statements describe denoising diffusion models (Ho et al., 2020)? Select all that apply.
+**Q158.** ☐ *Select all that apply.* Which statements describe denoising diffusion models (Ho et al., 2020)? Select all that apply.
 
 - ☐ **A.** Like VAEs, they are trained by maximizing a lower bound (ELBO) on the likelihood
 - ☐ **B.** All learned parameters live in the decoder (reverse process)
@@ -2467,35 +2627,35 @@ The critical factors: compute and cost, scale of data, and the technical experti
 - ☐ **D.** The latent variables z₁…z_T have the same dimensions as the data x
 - ☐ **E.** The forward process is learned jointly with the decoder, as the encoder of a VAE is
 
-**Q149.** ○ *Single answer.* The forward process is z_t = √(1 − β_t) · z_{t−1} + √β_t · ε_t. What do the two terms do?
+**Q159.** ○ *Single answer.* The forward process is z_t = √(1 − β_t) · z_{t−1} + √β_t · ε_t. What do the two terms do?
 
 - ○ **A.** The first adds noise and the second removes it
 - ○ **B.** The first rotates the data and the second rescales it so that the total norm stays unchanged
 - ○ **C.** The first attenuates the current signal; the second adds fresh Gaussian noise
 - ○ **D.** Both terms add noise, while β_t is learned by backpropagation so that the forward process can adapt to the data
 
-**Q150.** ○ *Single answer.* What is the diffusion kernel q(z_t | x), and why is it useful?
+**Q160.** ○ *Single answer.* What is the diffusion kernel q(z_t | x), and why is it useful?
 
 - ○ **A.** The learned reverse distribution, which must be computed by running all t intermediate steps sequentially
 - ○ **B.** A small neural network trained alongside the decoder to predict z_t from x at each step
 - ○ **C.** A uniform distribution over noise levels, used to choose which timestep each training example gets
 - ○ **D.** A closed-form Gaussian N(√α_t · x, (1 − α_t) I) with α_t = ∏(1 − β_s); it samples z_t in one step
 
-**Q151.** ☐ *Select all that apply.* Reverse conditionals in diffusion models. Which statements are correct? Select all that apply.
+**Q161.** ☐ *Select all that apply.* Reverse conditionals in diffusion models. Which statements are correct? Select all that apply.
 
 - ☐ **A.** Each reverse step is approximated by a Gaussian with a network mean and fixed variance
 - ☐ **B.** q(z_{t−1} | z_t) is generally intractable, because it requires the complex marginal q(z_{t−1})
 - ☐ **C.** The normal approximation to the reverse step is reasonable only when β_t is large and T is small
 - ☐ **D.** q(z_{t−1} | z_t, x), conditioned on the original data, is Gaussian with a closed form
 
-**Q152.** ○ *Single answer.* Ho et al. reparameterized the training target. Instead of predicting z_{t−1}, the network predicts
+**Q162.** ○ *Single answer.* Ho et al. reparameterized the training target. Instead of predicting z_{t−1}, the network predicts
 
 - ○ **A.** the noise ε that was added, giving a simpler loss that works better
 - ○ **B.** the noise schedule β_t, which the network learns to set separately for each training image and each step
 - ○ **C.** the class label of the image
 - ○ **D.** the original image x directly, in a single step from any z_t
 
-**Q153.** ☐ *Select all that apply.* Which statements about the U-Net used in diffusion models are correct? Select all that apply.
+**Q163.** ☐ *Select all that apply.* Which statements about the U-Net used in diffusion models are correct? Select all that apply.
 
 - ☐ **A.** A separate U-Net is trained for every one of the T = 1,000 timesteps, with no time embedding
 - ☐ **B.** It is used because its output has the same shape as its input, matching the predicted noise
@@ -2503,42 +2663,42 @@ The critical factors: compute and cost, scale of data, and the technical experti
 - ☐ **D.** Encoder features are concatenated to matching decoder stages through skip connections
 - ☐ **E.** A single network serves all time steps, given a sinusoidal time (noise-level) embedding
 
-**Q154.** ○ *Single answer.* In Ho et al. (2020), what noise schedule was used, and what did later work find?
+**Q164.** ○ *Single answer.* In Ho et al. (2020), what noise schedule was used, and what did later work find?
 
 - ○ **A.** β_t linear from 0.0001 to 0.02; a later paper found a cosine schedule worked better
 - ○ **B.** β_t decreasing from 0.02 down to 0.0001, so that the largest noise steps happen first; later work kept this unchanged
 - ○ **C.** A learned schedule from the start
 - ○ **D.** A constant β = 0.5 for all steps; later work found a linear schedule better
 
-**Q155.** ☐ *Select all that apply.* A sampler takes 20 steps, although training used 1,000 noise levels. Which statements are correct? Select all that apply.
+**Q165.** ☐ *Select all that apply.* A sampler takes 20 steps, although training used 1,000 noise levels. Which statements are correct? Select all that apply.
 
 - ☐ **A.** The number of sampling steps can be far smaller than the number of training steps
 - ☐ **B.** Sampling must run exactly 1,000 steps, because the U-Net only knows the noise levels it saw during training
 - ☐ **C.** With σ_t = 0 at every step (DDIM), the same input noise always yields the same output
 - ☐ **D.** Each step predicts the noise, estimates x₀, then re-noises that estimate to the t − 1 level
 
-**Q156.** ○ *Single answer.* Why is spherical interpolation, rather than plain linear interpolation, used between two Gaussian noise tensors a and b?
+**Q166.** ○ *Single answer.* Why is spherical interpolation, rather than plain linear interpolation, used between two Gaussian noise tensors a and b?
 
 - ○ **A.** Spherical interpolation removes the need to run the reverse denoising process for the in-between images
 - ○ **B.** It produces images from different classes, which helps cover the whole data distribution
 - ○ **C.** It keeps the noise variance constant, so every interpolant still looks like N(0, I) noise
 - ○ **D.** Linear interpolation is not differentiable
 
-**Q157.** ☐ *Select all that apply.* Two approaches to conditional generation were described. Which statements are correct? Select all that apply.
+**Q167.** ☐ *Select all that apply.* Two approaches to conditional generation were described. Which statements are correct? Select all that apply.
 
 - ☐ **A.** Both approaches require retraining a separate diffusion model for each class that needs to be generated
 - ☐ **B.** Classifier guidance adds a classifier gradient term to steer toward class c
 - ☐ **C.** Classifier-free guidance embeds the class in the U-Net, trained with and without it
 - ☐ **D.** Classifier-free guidance allows a continuous quality–diversity trade-off by weighting the conditioning
 
-**Q158.** ○ *Single answer.* How does diffusion training handle the intractable likelihood P(x) = ∫ P(x, z₁…z_T) dz?
+**Q168.** ○ *Single answer.* How does diffusion training handle the intractable likelihood P(x) = ∫ P(x, z₁…z_T) dz?
 
 - ○ **A.** It lower-bounds the log-likelihood with Jensen’s inequality and maximizes the ELBO
 - ○ **B.** It computes the integral exactly with Monte Carlo over all paths
 - ○ **C.** It replaces the likelihood with an adversarial loss from a discriminator that tells real images from denoised ones
 - ○ **D.** It ignores the likelihood and uses only perceptual loss
 
-**Q159.** ☐ *Select all that apply.* Which statements about Sora (“Video generation models as world simulators”) are correct? Select all that apply.
+**Q169.** ☐ *Select all that apply.* Which statements about Sora (“Video generation models as world simulators”) are correct? Select all that apply.
 
 - ☐ **A.** It reliably models physics, such as glass shattering, and correctly updates object state after actions like eating
 - ☐ **B.** Videos are compressed into a latent space and cut into spacetime patches that act as transformer tokens
@@ -2546,28 +2706,28 @@ The critical factors: compute and cost, scale of data, and the technical experti
 - ☐ **D.** It is a diffusion transformer that predicts clean patches from noisy ones, conditioned on text
 - ☐ **E.** It trains on native resolutions, durations and aspect ratios instead of cropping to a fixed size
 
-**Q160.** ○ *Single answer.* A network receives z_t (an image noised to level t) and is trained to output something close to z_{t−1}. Which part of diffusion training is this?
+**Q170.** ○ *Single answer.* A network receives z_t (an image noised to level t) and is trained to output something close to z_{t−1}. Which part of diffusion training is this?
 
 - ○ **A.** Learning each reverse step: from a t-step-noised image, predict the (t−1)-step version
 - ○ **B.** Training a discriminator that distinguishes scribbled copies from clean originals, as in adversarial training
 - ○ **C.** Computing the marginal distribution q(z_t)
 - ○ **D.** Training the forward process to add the right amount of noise for each individual image
 
-**Q161.** ○ *Single answer.* What does the marginal q(z_t) represent?
+**Q171.** ○ *Single answer.* What does the marginal q(z_t) represent?
 
 - ○ **A.** The distribution of z_t over all starting data points and all diffusion paths
 - ○ **B.** The distribution of one particular training image after it has been noised for t steps
 - ○ **C.** A delta function at zero, since every diffusion path eventually reaches the origin
 - ○ **D.** The learned reverse distribution produced by the U-Net at step t, after training has converged on the data
 
-**Q162.** ○ *Single answer.* With T = 100 and β = 0.03 at every step, what happens to three different 1-D starting values x as they pass through z₁…z₁₀₀?
+**Q172.** ○ *Single answer.* With T = 100 and β = 0.03 at every step, what happens to three different 1-D starting values x as they pass through z₁…z₁₀₀?
 
 - ○ **A.** They stay exactly at their starting values, because the noise added at each step has a mean of exactly zero
 - ○ **B.** They move apart without bound because noise accumulates
 - ○ **C.** They drift noisily toward zero, and their paths become indistinguishable from N(0, 1)
 - ○ **D.** They converge to the mean of the data distribution
 
-**Q163.** ☐ *Select all that apply.* Which statements about generating a sample from a trained diffusion model are correct? Select all that apply.
+**Q173.** ☐ *Select all that apply.* Which statements about generating a sample from a trained diffusion model are correct? Select all that apply.
 
 - ☐ **A.** Repeatedly sample z_{t−1} from N(f_t[z_t, φ_t], σ_t² I) down to x (ancestral sampling)
 - ☐ **B.** Start by drawing z_T from a standard normal
@@ -2575,35 +2735,35 @@ The critical factors: compute and cost, scale of data, and the technical experti
 - ☐ **D.** Start from a real training image and add noise until it matches the target class
 - ☐ **E.** The forward noising process must be run first on a training image to produce the starting latent
 
-**Q164.** ○ *Single answer.* With a linear schedule β from 0.0001 to 0.02 over T = 1,000 steps, why are early steps small?
+**Q174.** ○ *Single answer.* With a linear schedule β from 0.0001 to 0.02 over T = 1,000 steps, why are early steps small?
 
 - ○ **A.** Early steps destroy little detail; bigger steps are fine once the image is noisy
 - ○ **B.** To save memory
 - ○ **C.** To make the forward process learnable
 - ○ **D.** Because the U-Net is only trained on the first 10 steps, so later steps never need a gradient signal
 
-**Q165.** ○ *Single answer.* In a DDIM step, which estimate is computed first from the network’s noise prediction ε̂?
+**Q175.** ○ *Single answer.* In a DDIM step, which estimate is computed first from the network’s noise prediction ε̂?
 
 - ○ **A.** The class label of the image, so that the sampler can pick the right noise schedule for it
 - ○ **B.** The KL divergence
 - ○ **C.** The predicted clean image x̂₀ = (x_t − √(1−ᾱ_t) ε̂) / √ᾱ_t
 - ○ **D.** The next noise sample to add
 
-**Q166.** ☐ *Select all that apply.* Which of these belong to a standard Keras diffusion-model training setup? Select all that apply.
+**Q176.** ☐ *Select all that apply.* Which of these belong to a standard Keras diffusion-model training setup? Select all that apply.
 
 - ☐ **A.** The AdamW optimizer, which is Adam with decoupled weight decay
 - ☐ **B.** Normalization statistics computed on the training set
 - ☐ **C.** A mean absolute error loss on the predicted noise
 - ☐ **D.** A discriminator network trained jointly with the U-Net to sharpen the generated samples
 
-**Q167.** ○ *Single answer.* How does the cascaded text-to-image diffusion system reach 1024×1024 output?
+**Q177.** ○ *Single answer.* How does the cascaded text-to-image diffusion system reach 1024×1024 output?
 
 - ○ **A.** By tiling 256 separate 64×64 images
 - ○ **B.** A GAN upsamples the 64×64 output, after the diffusion model has fixed the overall composition
 - ○ **C.** 64×64 base, then 256 and 1024 stages, each conditioned on text and the smaller image
 - ○ **D.** One U-Net directly generates 1024×1024
 
-**Q168.** ○ *Single answer.* How does Sora generate images up to 2048×2048?
+**Q178.** ○ *Single answer.* How does Sora generate images up to 2048×2048?
 
 - ○ **A.** By upscaling with a CNN
 - ○ **B.** With a separate image-only diffusion model
@@ -2613,7 +2773,7 @@ The critical factors: compute and cost, scale of data, and the technical experti
 
 ### Answer key — Class 7 · Diffusion Models
 
-**Q148 → A, B, C, D**
+**Q158 → A, B, C, D**
 
 Diffusion models are easy to train and produce samples that can exceed GAN realism. Generation draws z_T from N(0, I) and passes it through the learned decoder step by step.
 
@@ -2623,7 +2783,7 @@ Diffusion models are easy to train and produce samples that can exceed GAN reali
 - D: ✓ Correct. This differs from VAEs, whose latent is lower-dimensional.
 - E: ✗ The forward process has no learned parameters. Its noise schedule is a hyperparameter.
 
-**Q149 → C**
+**Q159 → C**
 
 The forward process is a Markov chain: q(z_t | z_{t−1}) = N(√(1 − β_t) z_{t−1}, β_t I). If z_{t−1} has unit variance, Var(z_t) = (1 − β_t) + β_t = 1, so variance is preserved while signal is replaced by noise. After enough steps, q(z_T | x) ≈ N(0, I).
 
@@ -2632,7 +2792,7 @@ The forward process is a Markov chain: q(z_t | z_{t−1}) = N(√(1 − β_t) z_
 - C: ✓ Correct.
 - D: ✗ β_t is a fixed noise schedule, not learned.
 
-**Q150 → D**
+**Q160 → D**
 
 As t grows, the mean √α_t x shrinks toward zero and the variance 1 − α_t grows toward 1, so the kernel approaches a standard normal. Training uses it to jump directly to any noise level for a training image, the same reparameterization idea as a VAE: z_t = √α_t x + √(1 − α_t) ε.
 
@@ -2641,7 +2801,7 @@ As t grows, the mean √α_t x shrinks toward zero and the variance 1 − α_t g
 - C: ✗ It is Gaussian.
 - D: ✓ Correct.
 
-**Q151 → A, B, D**
+**Q161 → A, B, D**
 
 By Bayes’ rule, q(z_{t−1} | z_t) ∝ q(z_t | z_{t−1}) q(z_{t−1}). This is often well approximated by a normal distribution, but not always. Conditioning on x makes every factor Gaussian, so the training target is exact.
 
@@ -2650,7 +2810,7 @@ By Bayes’ rule, q(z_{t−1} | z_t) ∝ q(z_t | z_{t−1}) q(z_{t−1}). This i
 - C: ✗ It is reasonable when β_t is small (close to 0) and T is large.
 - D: ✓ Correct. Its mean blends z_t and x.
 
-**Q152 → A**
+**Q162 → A**
 
 The loss becomes a least-squares error between the true and predicted noise (mean absolute error also works in practice). Predicting the noise is an easier learning task, and the noise has the same shape as the image, which is why a U-Net is used.
 
@@ -2659,7 +2819,7 @@ The loss becomes a least-squares error between the true and predicted noise (mea
 - C: ✗ Unconditional DDPMs do not predict labels.
 - D: ✗ Predicting the clean image is possible, but it is not the DDPM reparameterization.
 
-**Q153 → B, C, D, E**
+**Q163 → B, C, D, E**
 
 Residual blocks connect adjacent representations, with periodic global self-attention. In a typical Keras implementation, each DownBlock has two residual blocks and average pooling, and each UpBlock has bilinear upsampling, concatenation of skips, and two residual blocks.
 
@@ -2669,7 +2829,7 @@ Residual blocks connect adjacent representations, with periodic global self-atte
 - D: ✓ Correct.
 - E: ✓ Correct.
 
-**Q154 → A**
+**Q164 → A**
 
 Increasing β_t means early steps destroy little detail. Nichol & Dhariwal’s cosine schedule spreads signal destruction more evenly. In terms of ᾱ_t, √ᾱ_t is the signal rate and √(1 − ᾱ_t) is the noise rate.
 
@@ -2678,7 +2838,7 @@ Increasing β_t means early steps destroy little detail. Nichol & Dhariwal’s c
 - C: ✗ The DDPM schedule was fixed and linear.
 - D: ✗ Neither part is right.
 
-**Q155 → A, C, D**
+**Q165 → A, C, D**
 
 Song et al. (2020) DDIM equation: x_{t−1} = √ᾱ_{t−1} · x̂₀ + √(1 − ᾱ_{t−1} − σ_t²) · ε̂ + σ_t ε. A deterministic mapping gives a well-defined correspondence between latent noise and images, which is useful for interpolation.
 
@@ -2687,7 +2847,7 @@ Song et al. (2020) DDIM equation: x_{t−1} = √ᾱ_{t−1} · x̂₀ + √(1 �
 - C: ✓ Correct. DDIM sampling is deterministic.
 - D: ✓ Correct. This is the two-step jump from x_t to x_{t−1}.
 
-**Q156 → C**
+**Q166 → C**
 
 A linear midpoint (a + b)/2 of independent standard normals has variance 0.5, which is off-distribution for the denoiser. The sin/cos weights satisfy sin² + cos² = 1, preserving unit variance. With deterministic DDIM sampling this gives smooth image transitions.
 
@@ -2696,7 +2856,7 @@ A linear midpoint (a + b)/2 of independent standard normals has variance 0.5, wh
 - C: ✓ Correct. For example, sin(πt/2)·a + cos(πt/2)·b.
 - D: ✗ It is differentiable.
 
-**Q157 → B, C, D**
+**Q167 → B, C, D**
 
 Text-to-image systems (e.g., Imagen, Saharia et al. 2022) condition on a sentence embedding from a large language model and use a cascade: 64×64 base → 256×256 → 1024×1024 super-resolution, each stage conditioned on the text and the lower-resolution image.
 
@@ -2705,7 +2865,7 @@ Text-to-image systems (e.g., Imagen, Saharia et al. 2022) condition on a sentenc
 - C: ✓ Correct.
 - D: ✓ Correct.
 
-**Q158 → A**
+**Q168 → A**
 
 The loss has a reconstruction term (recovering x from z₁) and diffusion terms (matching each predicted z_{t−1} to the Gaussian target from q(z_{t−1} | z_t, x)). It is summed over data points and steps. In practice: sample a time step, diffuse with the kernel, and update the decoder.
 
@@ -2714,7 +2874,7 @@ The loss has a reconstruction term (recovering x from z₁) and diffusion terms 
 - C: ✗ Diffusion models are not adversarial.
 - D: ✗ Training is likelihood-based.
 
-**Q159 → B, C, D, E**
+**Q169 → B, C, D, E**
 
 Sample quality improves markedly with compute (base → 4× → 32×). GPT expands short prompts into detailed captions. Sora animates images, extends videos, loops, does SDEdit-based editing and interpolation, and generates images up to 2048×2048 using a one-frame spatial grid.
 
@@ -2724,7 +2884,7 @@ Sample quality improves markedly with compute (base → 4× → 32×). GPT expan
 - D: ✓ Correct.
 - E: ✓ Correct.
 
-**Q160 → A**
+**Q170 → A**
 
 The reverse step is the only learned part. The training pair (z_t, target) comes from the fixed forward process. The exact target is q(z_{t−1} | z_t, x), a Gaussian with closed form (see the code, where a brute-force simulation matches the formula). Generation starts from N(0, I) and applies the learned step for t = T…1. In practice one U-Net conditioned on t does every step, and it predicts ε rather than z_{t−1}.
 
@@ -2733,7 +2893,7 @@ The reverse step is the only learned part. The training pair (z_t, target) comes
 - C: ✗ The marginal is a separate idea (the overall distribution of scribbled photos).
 - D: ✗ The forward process (scribbling) is fixed. Only denoising is learned.
 
-**Q161 → A**
+**Q171 → A**
 
 q(z_t) = ∫ q(z_t | x) Pr(x) dx. It is the distribution you would get by noising every training image to level t and pooling the results. As t grows it blurs Pr(x) toward N(0, I). In a fitted model, the estimated marginals closely match these true marginals.
 
@@ -2742,7 +2902,7 @@ q(z_t) = ∫ q(z_t | x) Pr(x) dx. It is the distribution you would get by noisin
 - C: ✗ It is a broad distribution.
 - D: ✗ That is the model’s estimate, p(z_t).
 
-**Q162 → C**
+**Q172 → C**
 
 Each step multiplies by √0.97 ≈ 0.985 and adds noise with variance 0.03. The conditionals q(z_t | z_{t−1}) are normal, with a mean slightly closer to zero than the current point and fixed variance β_t.
 
@@ -2751,7 +2911,7 @@ Each step multiplies by √0.97 ≈ 0.985 and adds noise with variance 0.03. The
 - C: ✓ Correct.
 - D: ✗ They converge to the standard normal, centered at 0, not to the data mean.
 
-**Q163 → A, B, C**
+**Q173 → A, B, C**
 
 Speed-ups: deterministic DDIM updates that jump between noise levels, so about 20 steps can replace 1,000 (see the DDIM code). Conditioning (class, image, text) can be added at every denoising step.
 
@@ -2761,7 +2921,7 @@ Speed-ups: deterministic DDIM updates that jump between noise levels, so about 2
 - D: ✗ That is closer to SDEdit-style editing. Unconditional generation starts from pure noise.
 - E: ✗ Generation does not need any training image. z_T comes straight from the prior.
 
-**Q164 → A**
+**Q174 → A**
 
 A cosine schedule later improved on this by spreading the destruction of signal more evenly.
 
@@ -2770,7 +2930,7 @@ A cosine schedule later improved on this by spreading the destruction of signal 
 - C: ✗ It is fixed.
 - D: ✗ All timesteps are trained.
 
-**Q165 → C**
+**Q175 → C**
 
 Then x_{t−1} = √ᾱ_{t−1} x̂₀ + √(1 − ᾱ_{t−1}) ε̂ (when σ = 0): the signal is rescaled to the t−1 rate and the predicted noise reapplied at the t−1 noise rate.
 
@@ -2779,7 +2939,7 @@ Then x_{t−1} = √ᾱ_{t−1} x̂₀ + √(1 − ᾱ_{t−1}) ε̂ (when σ = 
 - C: ✓ Correct.
 - D: ✗ Fresh noise is only added when σ_t > 0.
 
-**Q166 → A, B, C**
+**Q176 → A, B, C**
 
 The model was trained for 50 epochs. DownBlocks use average pooling; UpBlocks use bilinear upsampling plus concatenated skips.
 
@@ -2788,7 +2948,7 @@ The model was trained for 50 epochs. DownBlocks use average pooling; UpBlocks us
 - C: ✓ Correct.
 - D: ✗ No discriminator is used.
 
-**Q167 → C**
+**Q177 → C**
 
 The text is encoded by a large language model (Saharia et al., 2022). The stochastic model yields many compatible images and can count objects and render text.
 
@@ -2797,7 +2957,7 @@ The text is encoded by a large language model (Saharia et al., 2022). The stocha
 - C: ✓ Correct.
 - D: ✗ It uses a cascade.
 
-**Q168 → D**
+**Q178 → D**
 
 Video size is controlled at inference by arranging randomly initialized patches in a grid of the right size. Images are simply one-frame videos.
 
@@ -2811,7 +2971,7 @@ Video size is controlled at inference by arranging randomly initialized patches 
 
 ## Cross-topic synthesis
 
-**Q169.** ☐ *Select all that apply.* Skip or residual connections appear throughout the course. In which models do they play a central role? Select all that apply.
+**Q179.** ☐ *Select all that apply.* Skip or residual connections appear throughout the course. In which models do they play a central role? Select all that apply.
 
 - ☐ **A.** The Transformer (around attention and FFN sub-layers)
 - ☐ **B.** The diffusion U-Net
@@ -2819,14 +2979,14 @@ Video size is controlled at inference by arranging randomly initialized patches 
 - ☐ **D.** The original single-layer perceptron, where the skip lets the input bypass its one weighted sum
 - ☐ **E.** PixelCNN residual blocks
 
-**Q170.** ○ *Single answer.* Which comparison of latent dimensionality is correct?
+**Q180.** ○ *Single answer.* Which comparison of latent dimensionality is correct?
 
 - ○ **A.** Autoregressive models such as PixelCNN use a 200-dimensional latent
 - ○ **B.** Diffusion latents are lower-dimensional than the data, while VAE latents are larger than the input image
 - ○ **C.** Both VAEs and diffusion models compress to a lower-dimensional latent
 - ○ **D.** VAE latents are usually lower-dimensional than x; diffusion latents z₁…z_T match x’s size
 
-**Q171.** ☐ *Select all that apply.* Masking appears in several architectures. Which statements are correct? Select all that apply.
+**Q181.** ☐ *Select all that apply.* Masking appears in several architectures. Which statements are correct? Select all that apply.
 
 - ☐ **A.** Flamingo masks cross-attention so each text token sees only the image just before it
 - ☐ **B.** CLIP masks half of each image’s patches and trains the encoder to reconstruct the missing pixels
@@ -2834,7 +2994,7 @@ Video size is controlled at inference by arranging randomly initialized patches 
 - ☐ **D.** PixelCNN masks convolution weights so each pixel sees only earlier pixels in raster order
 - ☐ **E.** Decoder self-attention masks future positions to keep generation autoregressive
 
-**Q172.** ☐ *Select all that apply.* Contrastive objectives appear in several models. Which use a contrastive loss as a core training signal? Select all that apply.
+**Q182.** ☐ *Select all that apply.* Contrastive objectives appear in several models. Which use a contrastive loss as a core training signal? Select all that apply.
 
 - ☐ **A.** DDPM noise prediction, which contrasts each predicted noise vector against the noise of other images in the batch
 - ☐ **B.** Pic2Word’s mapping network
@@ -2842,42 +3002,42 @@ Video size is controlled at inference by arranging randomly initialized patches 
 - ☐ **D.** CLIP
 - ☐ **E.** Flamingo’s vision encoder pretraining
 
-**Q173.** ○ *Single answer.* Which family generally needs one network pass per generated element, making sampling inherently sequential and slow for long outputs?
+**Q183.** ○ *Single answer.* Which family generally needs one network pass per generated element, making sampling inherently sequential and slow for long outputs?
 
 - ○ **A.** GANs, since the generator must be run once for each pixel that it outputs
 - ○ **B.** Contrastive encoders like SimCLR
 - ○ **C.** VAEs
 - ○ **D.** Autoregressive models such as PixelCNN and GPT
 
-**Q174.** ○ *Single answer.* Which statement correctly contrasts the role of the KL term in a VAE with the role of KL inside the diffusion ELBO?
+**Q184.** ○ *Single answer.* Which statement correctly contrasts the role of the KL term in a VAE with the role of KL inside the diffusion ELBO?
 
 - ○ **A.** Both regularize a learned encoder toward N(0, I)
 - ○ **B.** VAE KL regularizes the learned encoder; diffusion KLs fit reverse steps to fixed targets
 - ○ **C.** VAEs have no KL term; their loss is reconstruction only, while diffusion models add a KL for stability
 - ○ **D.** Diffusion models have no KL terms at all; their loss is purely adversarial, comparing generated and real images
 
-**Q175.** ○ *Single answer.* A researcher wants a model that can directly score how likely a new image is, with an exact (not bounded) log-likelihood. Which family from the course fits best?
+**Q185.** ○ *Single answer.* A researcher wants a model that can directly score how likely a new image is, with an exact (not bounded) log-likelihood. Which family from the course fits best?
 
 - ○ **A.** Autoregressive model (e.g., PixelCNN)
 - ○ **B.** Diffusion model
 - ○ **C.** GAN
 - ○ **D.** VAE, because its ELBO is always exactly equal to log p(x) once training has fully converged
 
-**Q176.** ○ *Single answer.* Which pairing of model and generation step count is correct?
+**Q186.** ○ *Single answer.* Which pairing of model and generation step count is correct?
 
 - ○ **A.** VAE: T denoising steps
 - ○ **B.** GAN: one network pass per pixel, so a 64×64 image needs 4,096 sequential passes
 - ○ **C.** PixelCNN: one pass for the whole image
 - ○ **D.** DDPM: about 1,000 steps; DDIM: far fewer (e.g., 20)
 
-**Q177.** ☐ *Select all that apply.* Which models freeze a large pretrained component and train only new connecting modules? Select all that apply.
+**Q187.** ☐ *Select all that apply.* Which models freeze a large pretrained component and train only new connecting modules? Select all that apply.
 
 - ☐ **A.** BLIP-2 (frozen image encoder and LLM; trains the Q-Former)
 - ☐ **B.** Pic2Word (frozen CLIP; trains the mapping network)
 - ☐ **C.** Flamingo (frozen NFNet and LM; trains the resampler and gated cross-attention)
 - ☐ **D.** SimCLR, which freezes a supervised ImageNet encoder and only trains its projection head
 
-**Q178.** ○ *Single answer.* What do the VAE, diffusion and Sora pipelines have in common regarding Gaussian noise?
+**Q188.** ○ *Single answer.* What do the VAE, diffusion and Sora pipelines have in common regarding Gaussian noise?
 
 - ○ **A.** They all use adversarial noise
 - ○ **B.** Each samples standard-normal noise and maps it to data with a learned network
@@ -2887,7 +3047,7 @@ Video size is controlled at inference by arranging randomly initialized patches 
 
 ### Answer key — Cross-topic synthesis
 
-**Q169 → A, B, C, E**
+**Q179 → A, B, C, E**
 
 Skip connections ease optimization by representing identity mappings easily, mitigate vanishing gradients and degradation, and smooth the loss landscape. In U-Nets they also carry high-resolution detail from the encoder to the decoder by concatenation, not addition.
 
@@ -2897,7 +3057,7 @@ Skip connections ease optimization by representing identity mappings easily, mit
 - D: ✗ A single-layer perceptron has nothing to skip.
 - E: ✓ Correct.
 
-**Q170 → D**
+**Q180 → D**
 
 A VAE compresses (2-D for Fashion-MNIST, 200-D for CelebA). Diffusion corrupts at full resolution, which is why generation is costly. Latent diffusion approaches, including Sora’s compressed spacetime latent, run diffusion in a learned compressed space.
 
@@ -2906,7 +3066,7 @@ A VAE compresses (2-D for Fashion-MNIST, 200-D for CelebA). Diffusion corrupts a
 - C: ✗ Diffusion latents keep the data dimension.
 - D: ✓ Correct.
 
-**Q171 → A, C, D, E**
+**Q181 → A, C, D, E**
 
 Masking controls information flow. Causal masks (GPT, PixelCNN) enforce an ordering. Input masks (BERT) define a self-supervised objective. Cross-modal masks (Flamingo) control which media each token can see.
 
@@ -2916,7 +3076,7 @@ Masking controls information flow. Causal masks (GPT, PixelCNN) enforce an order
 - D: ✓ Correct.
 - E: ✓ Correct.
 
-**Q172 → B, C, D, E**
+**Q182 → B, C, D, E**
 
 Contrastive learning pulls positive pairs together and pushes negatives apart in an embedding space. A recurring theme: large batches or many negatives help, temperature matters, and the learned embeddings transfer well (zero-shot or linear probe).
 
@@ -2926,7 +3086,7 @@ Contrastive learning pulls positive pairs together and pushes negatives apart in
 - D: ✓ Correct (symmetric cross-entropy over image–text pairs).
 - E: ✓ Correct (NFNet-F6 trained with a CLIP-style two-term loss).
 
-**Q173 → D**
+**Q183 → D**
 
 Sampling cost: autoregressive models take one pass per token or pixel; diffusion models take one pass per denoising step (1,000 in DDPM, about 20 with DDIM-style samplers); VAEs and GANs take a single pass. Training of autoregressive Transformers is still parallel thanks to causal masking.
 
@@ -2935,7 +3095,7 @@ Sampling cost: autoregressive models take one pass per token or pixel; diffusion
 - C: ✗ A VAE generates with one decoder pass after sampling z.
 - D: ✓ Correct.
 
-**Q174 → B**
+**Q184 → B**
 
 Both maximize an ELBO. In the VAE, both the encoder and decoder are learned. In diffusion, the encoder is fixed, so the KL terms only train the decoder to invert known Gaussian corruption steps.
 
@@ -2944,7 +3104,7 @@ Both maximize an ELBO. In the VAE, both the encoder and decoder are learned. In 
 - C: ✗ The KL is half of the VAE loss.
 - D: ✗ The ELBO decomposes into KL and reconstruction terms, which simplify to a noise-prediction MSE.
 
-**Q175 → A**
+**Q185 → A**
 
 This follows the Class 1 taxonomy: tractable explicit models (autoregressive, normalizing flows) give exact densities; approximate models (VAE, diffusion, EBM) give bounds or approximations; implicit models (GAN) give none.
 
@@ -2953,7 +3113,7 @@ This follows the Class 1 taxonomy: tractable explicit models (autoregressive, no
 - C: ✗ GANs are implicit models and give no likelihood.
 - D: ✗ The ELBO equals log p(x) only if q matches the true posterior exactly, which rarely happens.
 
-**Q176 → D**
+**Q186 → D**
 
 Speed is a key trade-off between the families: single-pass (VAE, GAN), iterative (diffusion) and sequential per element (autoregressive).
 
@@ -2962,7 +3122,7 @@ Speed is a key trade-off between the families: single-pass (VAE, GAN), iterative
 - C: ✗ PixelCNN needs one pass per pixel.
 - D: ✓ Correct.
 
-**Q177 → A, B, C**
+**Q187 → A, B, C**
 
 Freezing keeps pretrained knowledge, cuts compute, and avoids catastrophic forgetting. This is the same principle as transfer learning in Class 2.
 
@@ -2971,7 +3131,7 @@ Freezing keeps pretrained knowledge, cuts compute, and avoids catastrophic forge
 - C: ✓ Correct.
 - D: ✗ SimCLR trains the encoder from scratch without labels.
 
-**Q178 → B**
+**Q188 → B**
 
 VAE: z ~ N(0, I) → decoder. Diffusion: z_T ~ N(0, I) → iterative denoiser. Sora: noisy spacetime latent patches → diffusion transformer.
 
@@ -2979,4 +3139,440 @@ VAE: z ~ N(0, I) → decoder. Diffusion: z_T ~ N(0, I) → iterative denoiser. S
 - B: ✓ Correct.
 - C: ✗ All three do.
 - D: ✗ VAEs and DDPMs sample noise at generation time.
+
+
+---
+
+## Your homework notebooks
+
+**Q189.** ○ *Single answer.* Class 1 latent-space notebook. The images are normalized with Normalize((0.5,), (0.5,)), and the decoder ends in nn.Sigmoid(). Training MSE stays near 0.92 for all 10 epochs. Why?
+
+```python
+transform = transforms.Compose([
+    transforms.ToTensor(),                     # [0, 1]
+    transforms.Normalize((0.5,), (0.5,))       # -> [-1, 1]
+])
+...
+self.decoder = nn.Sequential(
+    nn.Linear(encoding_dim, 128), nn.ReLU(True),
+    nn.Linear(128, 28 * 28),
+    nn.Sigmoid()                               # outputs in (0, 1)
+)
+criterion = nn.MSELoss()
+```
+
+- ○ **A.** The learning rate 1e-3 is too high for Adam
+- ○ **B.** Targets lie in [−1, 1] but sigmoid outputs lie in (0, 1), so each black pixel at −1 costs about 1
+- ○ **C.** The 64-dimensional bottleneck is too small to represent a 28×28 digit, so no reconstruction can improve
+- ○ **D.** Mixed-precision autocast rounds the loss
+
+**Q190.** ○ *Single answer.* In the same autoencoder, the encoder ends with nn.ReLU(True) right after the Linear(128, 64) bottleneck. What is a side effect on the latent codes?
+
+```python
+self.encoder = nn.Sequential(
+    nn.Linear(28 * 28, 128), nn.ReLU(True),
+    nn.Linear(128, encoding_dim),
+    nn.ReLU(True)          # <- applied to the latent code
+)
+```
+
+- ○ **A.** Latent codes can be negative, centered at zero
+- ○ **B.** The latent space becomes a standard normal distribution, which makes random sampling possible
+- ○ **C.** Codes are non-negative, and some dimensions can be stuck at 0 for every input (dead units)
+- ○ **D.** The decoder can no longer be trained
+
+**Q191.** ○ *Single answer.* How many learnable parameters does this encoder have?
+
+```python
+nn.Linear(28 * 28, 128), nn.ReLU(True),
+nn.Linear(128, 64),      nn.ReLU(True)
+```
+
+- ○ **A.** 100,352
+- ○ **B.** 108,544, since ReLU layers each add one learnable threshold for every unit they are applied to
+- ○ **C.** 108,736
+- ○ **D.** 217,472
+
+**Q192.** ○ *Single answer.* Class 2 CL_Simple notebook. The pixels are already divided by 255, and the augmentation pipeline also contains Rescaling(1./255). What is the effect?
+
+```python
+x_train = x_train.astype('float32') / 255.0
+data_augmentation = keras.Sequential([
+    layers.RandomCrop(height=32, width=32),
+    layers.RandomFlip("horizontal"),
+    layers.Rescaling(1./255),       # second division by 255
+    layers.RandomZoom(0.2),
+])
+```
+
+- ○ **A.** Inputs become [0, 1/255]: tiny contrast, so early layers are dominated by their biases
+- ○ **B.** It converts the images to grayscale, which removes the color information that SimCLR relies on most
+- ○ **C.** No effect; Rescaling is skipped when values are already in [0, 1]
+- ○ **D.** It reverses the earlier normalization, restoring the 0–255 range
+
+**Q193.** ○ *Single answer.* The CL_Simple training step builds one view per image and uses labels = tf.range(batch) on the similarity matrix normalized · normalizedᵀ. What is the positive pair for image i?
+
+```python
+encoded = encoder(x_batch_train, training=True)          # ONE view per image
+projected = projection_head(encoded, training=True)
+normalized = tf.math.l2_normalize(projected, axis=1)
+cosine_similarity = tf.matmul(normalized, normalized, transpose_b=True)
+logits = cosine_similarity / temperature                  # temperature = 0.1
+labels = tf.range(x_batch_train.shape[0])                 # target = diagonal
+loss_value = keras.losses.sparse_categorical_crossentropy(labels, logits, from_logits=True)
+```
+
+- ○ **A.** A second augmented view of image i
+- ○ **B.** Image i itself: the diagonal entry, whose cosine similarity is always 1
+- ○ **C.** The next image in the batch, i + 1
+- ○ **D.** The image with the same CIFAR-10 class label, chosen at random from the rest of the batch
+
+**Q194.** ☐ *Select all that apply.* Your CL_Simple loss started near 5.5 and flattened near 0.018 (batch size 256, τ = 0.1). Which explanations are correct? Select all that apply.
+
+```python
+# loss for row i with one view and labels = range(N):
+#   -log( e^{10} / (e^{10} + sum_{k != i} e^{cos_ik / 0.1}) )
+import numpy as np
+print(np.log(256))                       # 5.545 -> initial loss
+print(np.log(1 + 255 * np.exp(-10)))     # 0.0115 -> floor
+```
+
+- ☐ **A.** ≈5.5 is log(256): at the start the softmax is close to uniform over 256 columns
+- ☐ **B.** Reaching the floor shows that the encoder learned class-separating features, as the t-SNE plot should confirm
+- ☐ **C.** The loss could drop further toward 0 by lowering τ, without learning anything new
+- ☐ **D.** The floor ≈ 0.0115 = log(1 + 255·e^{−10}) is reached when every other embedding is orthogonal to image i
+
+**Q195.** ○ *Single answer.* In CL_Simple, what does layers.RandomCrop(height=32, width=32) do to 32×32 CIFAR images?
+
+```python
+layers.RandomCrop(height=32, width=32)   # input is already 32x32
+```
+
+- ○ **A.** It crops the center 16×16
+- ○ **B.** It pads the image to 40×40 and then crops a random 32×32 window, giving small translations
+- ○ **C.** A strong random crop like SimCLR’s
+- ○ **D.** Nothing: a 32×32 crop of a 32×32 image is the whole image
+
+**Q196.** ○ *Single answer.* CL_CustomeCLFunction builds pairs with make_pairs() using class labels (same class = positive, different class = negative). How does this differ from SimCLR?
+
+```python
+idxB = np.random.choice(idx[label])                 # same class -> positive
+pair_labels.append([1])
+neg_image = images[np.random.choice(neg_idx)]        # other class -> negative
+pair_labels.append([0])
+```
+
+- ○ **A.** It is the same as SimCLR
+- ○ **B.** It is supervised (needs labels); SimCLR’s positives are two augmentations of one image
+- ○ **C.** It is self-supervised, because the labels only decide which pairs are formed, not what the loss looks like
+- ○ **D.** It uses 2N − 2 negatives per positive, as in SimCLR
+
+**Q197.** ○ *Single answer.* In CL_CustomeCLFunction, the margin loss receives y_pred from Dense(1, sigmoid), not the raw distance. If the model outputs a constant 0.5 for every pair (balanced positives and negatives), what is the loss?
+
+```python
+def contrastive_loss(y_true, y_pred):
+    margin = 1
+    square_pred = tf.square(y_pred)
+    margin_square = tf.square(tf.maximum(margin - y_pred, 0))
+    return tf.reduce_mean(y_true * square_pred + (1 - y_true) * margin_square)
+
+distance = layers.Lambda(lambda e: tf.norm(e[0] - e[1], axis=1, keepdims=True))([a, b])
+outputs = layers.Dense(1, activation="sigmoid")(distance)   # y_pred in (0, 1)
+```
+
+- ○ **A.** 0.25
+- ○ **B.** 0
+- ○ **C.** 0.5, because the positive term p² and the negative term (1 − p)² are added rather than averaged
+- ○ **D.** 1.0
+
+**Q198.** ○ *Single answer.* The frozen ImageNet ResNet50 receives 32×32 CIFAR images with include_top=False. What spatial size reaches GlobalAveragePooling2D, and how many parameters are trainable in the whole Siamese model?
+
+```python
+base_model = applications.ResNet50(weights='imagenet', include_top=False, input_shape=(32, 32, 3))
+base_model.trainable = False
+x = base_model(x, training=False)
+x = layers.GlobalAveragePooling2D()(x)
+outputs = layers.Dense(128, activation=None)(x)
+...
+outputs = layers.Dense(1, activation="sigmoid")(distance)
+```
+
+- ○ **A.** 4×4×512; about 23.5 million, since setting base_model.trainable = False only freezes batch-norm statistics
+- ○ **B.** 1×1×2048; 262,274
+- ○ **C.** 7×7×2048; 2,048
+- ○ **D.** 32×32×3; 0
+
+**Q199.** ○ *Single answer.* Class 3 VAE notebook: why are the 28×28 Fashion-MNIST images padded to 32×32 before the encoder?
+
+```python
+imgs = np.pad(imgs, ((0, 0), (2, 2), (2, 2)), constant_values=0.0)   # 28 -> 32
+x = layers.Conv2D(32,  (3, 3), strides=2, padding="same")(encoder_input)  # 16
+x = layers.Conv2D(64,  (3, 3), strides=2, padding="same")(x)              # 8
+x = layers.Conv2D(128, (3, 3), strides=2, padding="same")(x)              # 4
+```
+
+- ○ **A.** To add a border that helps the KL term
+- ○ **B.** Because Conv2D layers in Keras refuse to accept inputs whose height and width are not powers of two
+- ○ **C.** 32 halves cleanly three times (32→16→8→4), so the decoder’s three ×2 upsamplings return exactly 32
+- ○ **D.** To center the clothing items
+
+**Q200.** ○ *Single answer.* In your VAE, BETA = 500 multiplies the reconstruction loss, not the KL loss. Relative to an unweighted sum, what does this do?
+
+```python
+reconstruction_loss = tf.reduce_mean(
+    BETA * losses.binary_crossentropy(data, reconstruction, axis=(1, 2, 3)))
+kl_loss = tf.reduce_mean(tf.reduce_sum(
+    -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var)), axis=1))
+total_loss = reconstruction_loss + kl_loss
+```
+
+- ○ **A.** It changes the reparameterization trick, scaling ε by 500 so that the sampled latent codes spread more widely
+- ○ **B.** It strengthens the KL regularization
+- ○ **C.** Reconstruction dominates (like KL weight 1/500): sharper outputs, looser prior fit
+- ○ **D.** It has no effect, because Adam normalizes the gradient scale of each parameter separately
+
+**Q201.** ○ *Single answer.* In the Sampling layer, why is the noise multiplied by tf.exp(0.5 * z_log_var)?
+
+```python
+class Sampling(layers.Layer):
+    def call(self, inputs):
+        z_mean, z_log_var = inputs
+        epsilon = K.random_normal(shape=(tf.shape(z_mean)[0], tf.shape(z_mean)[1]))
+        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
+```
+
+- ○ **A.** It is the variance σ²
+- ○ **B.** It is σ = √(e^{log σ²}), and the reparameterization needs the standard deviation
+- ○ **C.** It is a learning-rate warmup factor applied to the latent noise during the first few epochs
+- ○ **D.** It keeps the KL term at zero
+
+**Q202.** ☐ *Select all that apply.* Your VAE run had two quiet bugs that you spotted. Which statements are correct? Select all that apply.
+
+```python
+model_checkpoint_callback = callbacks.ModelCheckpoint(..., monitor="loss", save_best_only=True)
+return {m.name: m.result() for m in self.metrics}   # names: total_loss, reconstruction_loss, kl_loss
+
+x = norm.ppf(np.linspace(0, 1, grid_size))           # includes ppf(0) and ppf(1)
+p = norm.cdf(z)
+```
+
+- ☐ **A.** norm.ppf(0) = −∞ and ppf(1) = +∞, so the grid’s outer ring decodes from infinite points
+- ☐ **B.** norm.cdf(z) maps N(0, 1) codes to Uniform(0, 1), so an even spread means z fits the prior
+- ☐ **C.** ModelCheckpoint monitors "loss", but train_step returns "total_loss", so no checkpoint is saved
+- ☐ **D.** The reconstruction loss should use mean squared error because binary cross-entropy is undefined on padded pixels
+
+**Q203.** ○ *Single answer.* Class 4 BertViz notebook. For sentence_a = “The cat sat on the mat” and sentence_b = “The cat lay on the rug”, how many tokens are there, and what is sentence_b_start?
+
+```python
+inputs = tokenizer(sentence_a, sentence_b, return_tensors='pt')
+token_type_ids = inputs['token_type_ids']
+sentence_b_start = token_type_ids[0].tolist().index(1)
+```
+
+- ○ **A.** 12 tokens; 6
+- ○ **B.** 13 tokens; 7
+- ○ **C.** 15 tokens; 8
+- ○ **D.** 14 tokens; 7, because BERT uses only one [SEP] token between the sentences and none at the end
+
+**Q204.** ○ *Single answer.* outputs.attentions is a tuple of 12 tensors. After A = torch.stack(attention)[:, 0], what is A’s shape, and what is A[L, h, i, j]?
+
+```python
+A = torch.stack(attention)[:, 0]
+def next_tok(L, h):
+    return torch.stack([A[L, h, i, i+1] for i in range(n-1)]).mean().item()
+```
+
+- ○ **A.** (15, 15); the average over all layers and heads
+- ○ **B.** (12, 15, 15); attention from token j to token i
+- ○ **C.** (1, 12, 12, 15); the value vector of token i in head h, as produced by the W_V projection
+- ○ **D.** (12, 12, 15, 15); how much token i attends to j in layer L, head h
+
+**Q205.** ○ *Single answer.* You found layer 2, heads 0 and 9 put about 0.86 of their attention on the next token. Why could this pattern never appear in GPT-2?
+
+```python
+print("L2 H0 next-token:", round(next_tok(2, 0), 2))   # 0.86
+print("L3 H5 prev-token:", round(prev_tok(3, 5), 2))   # 0.61
+```
+
+- ○ **A.** GPT-2 uses learned positional embeddings, which cannot represent a relative offset of one token
+- ○ **B.** GPT-2’s causal mask zeroes every weight on future positions, including i+1
+- ○ **C.** GPT-2 has only one attention head per layer
+- ○ **D.** GPT-2 has fewer layers
+
+**Q206.** ○ *Single answer.* From layer 4 onward, 0.60–0.74 of all attention lands on the two [SEP] tokens. What is the usual interpretation?
+
+```python
+for L in range(12):
+    print(f"layer {L}: CLS {A[L,:,:,0].mean():.2f}  SEP {A[L,:,:,sep].sum(-1).mean():.2f}")
+```
+
+- ○ **A.** The model is copying the sentence boundary into every token’s value vector to improve NSP
+- ○ **B.** A bug in BertViz that mislabels the [CLS] token as [SEP] when two sentences are given together
+- ○ **C.** A “no-op” sink: heads with nothing to attend to park their weight on [SEP]
+- ○ **D.** [SEP] holds the most semantic content in the sentence
+
+
+### Answer key — Your homework notebooks
+
+**Q189 → B**
+
+The best a sigmoid can output for target −1 is about 0, giving squared error (0 − (−1))² = 1 per black pixel. Fix either side: drop the Normalize (keep [0, 1]), or use Tanh as the last activation. A second point: the printed loss is the last batch’s, because the print is outside the inner loop, so the epoch-to-epoch wiggle is just noise.
+
+- A: ✗ A too-high LR gives unstable or exploding loss, not a flat floor.
+- B: ✓ Correct. MNIST is about 80% black pixels, so the loss floor is near 0.8–0.9.
+- C: ✗ 64 dimensions is plenty for MNIST. A plain AE reaches far lower error once the ranges match.
+- D: ✗ fp16 rounding is far too small to explain a floor of 0.9.
+
+**Q190 → C**
+
+A ReLU at the bottleneck throws away half of each dimension’s range and can kill units whose pre-activation is always negative. Autoencoders usually leave the bottleneck linear. Either way, a plain AE’s codes are not a distribution you can sample from, which is what a VAE adds.
+
+- A: ✗ ReLU clips negatives to 0.
+- B: ✗ Only a VAE’s KL term does that. A ReLU bottleneck does the opposite.
+- C: ✓ Correct. You can see many exact zeros in the printed latent vectors.
+- D: ✗ It trains, with a constrained code.
+
+**Q191 → C**
+
+A Linear(in, out) layer has in·out weights plus out biases. ReLU, Flatten and Sigmoid have none. The decoder is 64·128 + 128 + 128·784 + 784 = 109,456.
+
+- A: ✗ This counts only the first layer’s weights (784·128) and omits everything else.
+- B: ✗ ReLU has no parameters, and this also drops the biases.
+- C: ✓ Correct. (784·128 + 128) + (128·64 + 64) = 100,480 + 8,256.
+- D: ✗ That doubles the count, as if the decoder were included twice.
+
+**Q192 → A**
+
+Unlike RandomFlip or RandomZoom, Rescaling is deterministic and active at inference too. The network can partly compensate with larger weights, but optimization becomes harder. Remove one of the two scalings.
+
+- A: ✓ Correct. It is also applied in encoder.predict, not only during training.
+- B: ✗ Rescaling changes scale, not channels.
+- C: ✗ Rescaling always multiplies. It does not check the input range.
+- D: ✗ Multiplying by 1/255 again shrinks further.
+
+**Q193 → B**
+
+Since sim(i, i) = 1 always, the loss is minimized just by pushing different images apart. Nothing forces invariance to augmentation, which is the whole point of SimCLR. The fix: encode two augmentations per image (2N rows), mask the diagonal, and use partner indices i ± N as labels. The NT-Xent code panel shows exactly this.
+
+- A: ✗ No second view is ever created. Each image passes through the encoder once.
+- B: ✓ Correct. The ‘positive’ is trivially satisfied.
+- C: ✗ tf.range(batch) makes label i point at column i.
+- D: ✗ Class labels are not used in this notebook.
+
+**Q194 → A, C, D**
+
+A low contrastive loss is not proof of a good representation. The SimCLR paper makes the same point: without ℓ2 normalization, contrastive accuracy rose while linear-evaluation accuracy fell. Judge representations with a downstream probe (linear evaluation or k-NN), not with the pretext loss.
+
+- A: ✓ Correct. log(256) = 5.545.
+- B: ✗ The loss can hit the floor by spreading embeddings apart arbitrarily. Your t-SNE showed no class clusters, which is consistent with that.
+- C: ✓ Correct. A smaller τ raises the diagonal logit, which shrinks the floor.
+- D: ✓ Correct. The diagonal logit is 1/τ = 10 and the others are about 0.
+
+**Q195 → D**
+
+SimCLR’s most important pair is random resized crop plus color distortion. This pipeline has neither an effective crop nor color jitter, so even with two views the contrastive task would be too easy. A fix: RandomCrop(24, 24) followed by Resizing(32, 32), plus RandomContrast, RandomBrightness or hue jitter.
+
+- A: ✗ No.
+- B: ✗ Keras RandomCrop does not pad.
+- C: ✗ A crop the same size as the image has only one possible position.
+- D: ✓ Correct. SimCLR crops a random region, then resizes it back.
+
+**Q196 → B**
+
+Siamese margin loss: L = y·d² + (1 − y)·max(m − d, 0)². SimCLR’s NT-Xent treats every other view in the batch as a negative and needs no labels, which is why it scales to unlabeled data.
+
+- A: ✗ SimCLR never uses labels.
+- B: ✓ Correct. This is a classic Siamese network with a Hadsell margin loss.
+- C: ✗ Choosing positives from labels is exactly what makes it supervised.
+- D: ✗ It uses one negative per anchor, not in-batch negatives.
+
+**Q197 → A**
+
+With y = 1: p² = 0.25. With y = 0: max(1 − p, 0)² = 0.25. Your run sat around 0.24–0.26 with accuracy near 0.5, so it was stuck at this trivial solution. Because sigmoid ∈ (0, 1) and the margin is 1, the negative term can never reach 0. Apply the loss to the distance itself, without the sigmoid head.
+
+- A: ✓ Correct. Both terms equal 0.25, and the mean is 0.25.
+- B: ✗ For y = 1 the term is p² = 0.25, which is not 0.
+- C: ✗ reduce_mean averages over the batch, and each example has only one of the two terms active.
+- D: ✗ No.
+
+**Q198 → B**
+
+A single 1×1 cell means pooling has nothing to average, and ImageNet filters are being applied to tiny, unnaturally scaled inputs (no resnet50.preprocess_input). Combined with only about 262K trainable weights, this explains the flat ~0.5 accuracy. Resizing to 224, or fine-tuning the top stages, would help.
+
+- A: ✗ trainable = False freezes every weight in the base.
+- B: ✓ Correct. ResNet50 downsamples by 32, so 32/32 = 1. Dense(128): 2048·128 + 128; Dense(1): 2.
+- C: ✗ 7×7 is what a 224×224 input gives.
+- D: ✗ The ResNet does run, and the Dense layers do train.
+
+**Q199 → C**
+
+Stride-2 ‘same’ convolutions give ⌈H/2⌉, and stride-2 transposed convolutions give 2H. Symmetric encoder–decoder stacks need H divisible by 2^(number of stages). This is a common source of shape bugs.
+
+- A: ✗ Padding is unrelated to the KL term.
+- B: ✗ Keras accepts any size.
+- C: ✓ Correct. 28 gives 14→7→4 (ceil), and 4 upsampled three times is 32, which no longer matches 28.
+- D: ✗ Fashion-MNIST items are already centered.
+
+**Q200 → C**
+
+Only the ratio matters: 500·Rec + KL ∝ Rec + KL/500. binary_crossentropy with axis=(1, 2, 3) averages over 1,024 pixels, so ×500 roughly restores a per-image sum scale. With a larger KL weight, latents fit N(0, I) more tightly but reconstructions blur (the β-VAE trade-off).
+
+- A: ✗ β only appears in the loss.
+- B: ✗ The KL term’s relative weight shrinks.
+- C: ✓ Correct.
+- D: ✗ Adam normalizes per parameter but cannot undo the relative weighting between two terms that share parameters.
+
+**Q201 → B**
+
+z = μ + σ ⊙ ε with ε ~ N(0, I). exp(0.5·log σ²) = σ, which is positive for any real network output. The gradient flows to z_mean and z_log_var, while ε is treated as a constant input.
+
+- A: ✗ exp(log σ²) would be the variance. The 0.5 takes the square root.
+- B: ✓ Correct.
+- C: ✗ Unrelated.
+- D: ✗ Sampling does not change the KL formula.
+
+**Q202 → A, B, C**
+
+These bugs are about tooling, not the model, but they are typical exam-style “spot the bug” items: metric-name mismatches, quantile functions at 0 and 1, and the probability-integral transform (if Z ~ N(0, 1) then Φ(Z) ~ U(0, 1)).
+
+- A: ✓ Correct. Use np.linspace(0.01, 0.99, 15) instead.
+- B: ✓ Correct. That is why the p-value plot was used.
+- C: ✓ Correct. Keras warns that the monitored metric is unavailable and skips saving.
+- D: ✗ BCE works for [0, 1] targets, including the zero padding.
+
+**Q203 → C**
+
+token_type_ids is 0 for [CLS] A [SEP] and 1 for B [SEP], so .index(1) = 8. Each layer’s attention tensor has shape (batch = 1, heads = 12, 15, 15).
+
+- A: ✗ That counts only the words.
+- B: ✗ This forgets the [CLS] and one [SEP], or the segment boundary.
+- C: ✓ Correct. [CLS] + 6 + [SEP] occupy indices 0–7; segment B starts at 8.
+- D: ✗ BERT adds a [SEP] after each segment.
+
+**Q204 → D**
+
+Stacking gives (layers = 12, batch = 1, heads = 12, query = 15, key = 15), and [:, 0] drops the batch axis. So next_tok(L, h) = mean_i A[L, h, i, i+1] measures how much each token looks at the next one.
+
+- A: ✗ No averaging is done.
+- B: ✗ The head axis is missing, and the query/key order is reversed.
+- C: ✗ Attention tensors hold weights, not value vectors.
+- D: ✓ Correct. Rows are queries and each row sums to 1.
+
+**Q205 → B**
+
+The mirror pattern, your layer 3 head 5 previous-token head (0.61), is allowed in both models. Previous-token heads are a known building block of induction heads in GPT-style models.
+
+- A: ✗ Learned positions can still support offset patterns. Previous-token heads are common in GPT-2.
+- B: ✓ Correct. BERT has no causal mask, so it can look ahead.
+- C: ✗ GPT-2 small has 12 heads per layer.
+- D: ✗ Depth is not the reason.
+
+**Q206 → C**
+
+Because softmax weights must sum to 1, a head that is inactive for a given token needs a default target. Studies show that zeroing attention to [SEP] in these layers barely changes outputs. Your layer 4, head 3 finding (first “cat” → second “cat” at 0.86) is the opposite case: a head doing real cross-sentence matching.
+
+- A: ✗ This is not the accepted explanation.
+- B: ✗ The pattern is real and well documented (Clark et al., 2019).
+- C: ✓ Correct. The weights must sum to 1, so they have to land somewhere.
+- D: ✗ [SEP] is a fixed delimiter with no sentence-specific meaning.
 

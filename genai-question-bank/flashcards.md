@@ -1,6 +1,6 @@
 # SEAS 8525 Flashcards
 
-132 cards. Cover the right column and test yourself.
+145 cards. Cover the right column and test yourself.
 
 ## Class 1 · Introduction to Generative AI
 
@@ -178,3 +178,21 @@
 | Where contrastive losses appear | SimCLR (views), CLIP (image–text), Pic2Word (pseudo token), Flamingo’s vision encoder pretraining. |
 | Where masking appears | GPT causal mask, PixelCNN masked convolutions, BERT MLM inputs, Flamingo image-causal cross-attention. |
 | Frozen backbone + small trainable bridge | BLIP-2 (Q-Former), Flamingo (resampler + gated cross-attention), Pic2Word (mapping network), transfer learning. |
+
+## Your homework notebooks
+
+| Prompt | Answer |
+|---|---|
+| Normalize((0.5,),(0.5,)) + Sigmoid output: what goes wrong? | Targets are in [−1, 1] but sigmoid outputs are in (0, 1). Black pixels (−1) always cost ≈1, so the MSE floors near 0.9. Fix: drop Normalize, or use Tanh. |
+| SimCLR with one view and labels = range(N): what is the positive? | The image itself (the diagonal, cosine = 1). The loss just pushes images apart and learns no augmentation invariance. Fix: two views, mask the diagonal, positives at i ± N. |
+| CL_Simple loss: start ≈ 5.5, end ≈ 0.018. Why? | Start = log(256), a uniform softmax over the batch. Floor = log(1 + 255·e^{−1/τ}) ≈ 0.0115 when the others are orthogonal. A low pretext loss does not mean good features. |
+| Rescaling(1./255) after already dividing by 255 | Inputs shrink to [0, 1/255]. It is deterministic, so it also applies at predict time. |
+| RandomCrop(32, 32) on 32×32 images | No-op. SimCLR needs a random crop plus resize, and color distortion. |
+| Margin loss applied to a sigmoid output with margin 1 | (1 − p)² can never reach 0. A constant p = 0.5 gives loss 0.25, the trivial solution. Apply the loss to the raw distance. |
+| Frozen ResNet50 on 32×32 input | Downsampling ×32 leaves a 1×1×2048 map; no preprocess_input; only Dense layers train (262,274 params). |
+| Why pad Fashion-MNIST 28 → 32 in the VAE? | Three stride-2 halvings plus three ×2 upsamplings need H divisible by 8: 32→16→8→4→8→16→32. |
+| BETA = 500 on the reconstruction term | Same as a KL weight of 1/500: sharper reconstructions, looser fit to N(0, I). |
+| ModelCheckpoint(monitor="loss") with a custom train_step returning total_loss | The metric name does not match, so the checkpoint never saves. |
+| norm.ppf(np.linspace(0, 1, n)) | Endpoints give ±∞, so decoded images at the grid edge are blank. Use linspace(0.01, 0.99, n). |
+| BERT attention to [SEP] in layers 4–11 (≈0.6–0.7) | A no-op attention sink: heads with nothing to do park their weight there, because softmax must sum to 1. |
+| BERT next-token head (L2 H0, 0.86): possible in GPT-2? | No. The causal mask zeros attention to i+1. Previous-token heads (like L3 H5) are possible in both. |
