@@ -130,7 +130,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <header class="top">
     <div class="eyebrow">SEAS 8525 · Generative AI · Doctoral exam prep</div>
     <h1>Generative AI Question Bank</h1>
-    <p class="lede">228 questions, 160 flashcards and 43 runnable code examples drawn from Classes 1–7 and the SimCLR paper (Chen et al., 2020). Every option has its own note, and every question has a full explanation. Correct answers are never the longest option, and option order is shuffled.</p>
+    <p class="lede">265 questions, 160 flashcards and 43 runnable code examples drawn from Classes 1–7 and the SimCLR paper (Chen et al., 2020). Every option has its own note, and every question has a full explanation. Correct answers are never the longest option, and option order is shuffled.</p>
     <div class="tabs" role="tablist" aria-label="Study mode">
       <button class="tab" role="tab" id="tab-quiz" aria-selected="true" aria-controls="quizView">Practice questions</button>
       <button class="tab" role="tab" id="tab-flash" aria-selected="false" aria-controls="flashView">Flashcards</button>
@@ -156,6 +156,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
       <button class="chip" id="f-all" aria-pressed="true">All types</button>
       <button class="chip" id="f-s" aria-pressed="false">○ Single answer</button>
       <button class="chip" id="f-m" aria-pressed="false">☐ Multiple answers</button>
+      <button class="chip" id="f-code" aria-pressed="false">&lt;/&gt; Code questions only</button>
       <span class="sep"></span>
       <button class="chip" id="f-open" aria-pressed="false">Unanswered only</button>
       <button class="chip" id="f-wrong" aria-pressed="false">Missed only</button>
@@ -1938,6 +1939,429 @@ Q("simclr","s","Why do the authors use linear warmup plus cosine decay with LARS
  ["LARS removes the need for a temperature",0,"τ is still needed."]
 ],"Training ResNet-50 at batch 4096 for 100 epochs on 128 TPU v3 cores takes about 1.5 hours. Global batch normalization is also required, to stop the per-device leakage shortcut.");
 
+// Code-reading questions: read the snippet, predict output, shape, purpose or bug. No code writing.
+
+// ---------- Class 1 ----------
+Q("intro","s","What does this function return for a box that leaves one data point outside it, and why?",[
+ ["0, because log(0) is clipped to zero",0,"Nothing is clipped. The early return gives −inf."],
+ ["−inf: one point has density 0, so the product of densities is 0",1,"Correct. That box cannot have generated the data."],
+ ["A small negative number proportional to how far outside the box the stray point lies",0,"A uniform density gives no partial credit for distance."],
+ ["NaN, because the area is undefined",0,"The area is well defined. The function returns early anyway."]
+],"The likelihood is ∏ p(xᵢ). The uniform density is 0 outside the box, so a single outside point makes the product 0 and its log −∞. Among boxes that contain every point, the score n·log(1/area) is highest for the smallest box, so the MLE is the tight bounding box.",
+`def log_lik(box, X):
+    x1, y1, x2, y2 = box
+    inside = (X[:,0] >= x1) & (X[:,0] <= x2) & (X[:,1] >= y1) & (X[:,1] <= y2)
+    if not inside.all():
+        return -np.inf
+    return len(X) * np.log(1 / ((x2 - x1) * (y2 - y1)))`);
+
+Q("intro","s","What does this code demonstrate?",[
+ ["The product is more accurate than the sum",0,"The product underflows."],
+ ["np.prod(p) underflows to 0.0, while the sum of logs is about −1600 and usable",1,"Correct. This is why we maximize the log-likelihood."],
+ ["Logarithms change which parameters maximize the likelihood, so the two results disagree on the best fit",0,"log is monotonic, so the argmax is unchanged."],
+ ["It raises a NumPy overflow error",0,"Underflow gives 0.0 silently, without an error."]
+],"Each factor is at most 0.5, so the product of 1,000 of them is below 0.5^1000 ≈ 1e−301, at the edge of float64’s range (about 1e−308), and with smaller factors it falls to exactly 0. Sums of logs stay in an ordinary numeric range.",
+`p = rng.uniform(0.01, 0.5, size=1000)
+print(np.prod(p))            # ?
+print(np.sum(np.log(p)))     # ?`);
+
+// ---------- Class 2 ----------
+Q("dl","s","What does model.summary() report for this layer?",[
+ ["Output (None, 32, 32, 32), 864 parameters",0,"padding='valid' shrinks 32 to 30, and there are 32 biases."],
+ ["Output (None, 30, 30, 32), 896 parameters",1,"Correct. (3·3·3 + 1)·32 = 896; valid padding gives 32 − 3 + 1 = 30."],
+ ["Output (None, 30, 30, 3), 896 parameters, because Conv2D keeps the number of input channels",0,"The output channel count equals the number of filters, 32."],
+ ["Output (None, 32, 32, 3), 28 parameters",0,"No."]
+],"Conv2D defaults: strides = 1, padding = 'valid'. Parameters = (k·k·C_in + 1)·filters, independent of image size.",
+`inputs = layers.Input(shape=(32, 32, 3))
+x = layers.Conv2D(filters=32, kernel_size=(3, 3))(inputs)`);
+
+Q("dl","s","After MaxPooling2D(2) the tensor is (None, 15, 15, 32). What is the shape and parameter count after this layer?",[
+ ["(None, 7, 7, 64), 18,432",0,"‘same’ with stride 2 gives ceil(15/2) = 8, and the bias count is missing."],
+ ["(None, 8, 8, 64), 18,496",1,"Correct. (3·3·32 + 1)·64 = 18,496."],
+ ["(None, 15, 15, 64), 18,496, since padding='same' always keeps the spatial size whatever the stride",0,"‘same’ keeps the size only at stride 1. At stride 2 it is ⌈H/2⌉."],
+ ["(None, 8, 8, 32), 9,248",0,"The output has 64 channels."]
+],"Shape rules: ‘valid’ → ⌊(H − k)/s⌋ + 1; ‘same’ → ⌈H/s⌉. Pooling layers have no parameters.",
+`x = layers.MaxPooling2D(2)(x)          # (None, 15, 15, 32)
+x = layers.Conv2D(64, 3, strides=2, padding="same", activation="relu")(x)`);
+
+Q("dl","s","Which weights change when model.fit runs?",[
+ ["All ResNet50 weights and the Dense head",0,"base.trainable = False freezes the ResNet."],
+ ["Only the new Dense(10) head; the ResNet50 weights are frozen",1,"Correct. This is transfer learning (feature extraction)."],
+ ["None, because frozen models cannot be compiled",0,"The model compiles, and the trainable head updates."],
+ ["Only the batch-normalization layers inside ResNet50, because they always stay trainable when the base is frozen",0,"Setting trainable = False on the base freezes its batch-norm layers too."]
+],"include_top=False removes the 1,000-class ImageNet head; pooling='avg' gives a 2,048-d feature vector; the new head maps it to 10 classes. Training updates only 2,048·10 + 10 = 20,490 weights.",
+`base = tf.keras.applications.ResNet50(include_top=False, weights="imagenet", pooling="avg")
+base.trainable = False
+model = tf.keras.Sequential([base, layers.Dense(10, activation="softmax")])
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss="sparse_categorical_crossentropy")
+model.fit(x_train, y_train, epochs=5)`);
+
+Q("dl","s","Continuing from the previous model, the student runs this. What is it, and why the tiny learning rate?",[
+ ["Training from scratch; the low LR prevents overfitting",0,"The pretrained weights are still loaded."],
+ ["Fine-tuning the top layers; the low LR avoids destroying the pretrained features",1,"Correct. The early, generic layers stay frozen."],
+ ["Transfer learning with every layer frozen, since layer.trainable = False is applied to the whole network",0,"Only base.layers[:-30] are frozen. The last 30 layers train."],
+ ["Pruning the last 30 layers",0,"Nothing is removed."]
+],"This is the typical two-stage recipe: (1) train the new head with the base frozen; (2) unfreeze the top block and recompile with a learning rate about 100× smaller. Recompiling is required for trainable-flag changes to take effect.",
+`base.trainable = True
+for layer in base.layers[:-30]:
+    layer.trainable = False
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-5), loss="sparse_categorical_crossentropy")
+model.fit(x_train, y_train, epochs=5)`);
+
+Q("dl","s","What does this residual block compute, and what must hold for the addition to work?",[
+ ["Concatenation of x and the conv output; channels may differ",0,"layers.Add is element-wise addition, not concatenation."],
+ ["f(x) = C(x) + x element-wise; C(x) must match x’s shape (64 channels here)",1,"Correct. Otherwise a 1×1 conv projection is needed on the skip."],
+ ["It multiplies x by the conv output to act as a gate, like an LSTM, which is why the shapes must match",0,"Add is a sum, not a product."],
+ ["It averages x and C(x)",0,"A plain sum, not an average."]
+],"The conv path learns only the residual C(x) = f(x) − x. Gradients flow through the identity path unchanged, which is what lets 50 to 150 layer ResNets train.",
+`def residual_block(x):                 # x: (None, H, W, 64)
+    y = layers.Conv2D(64, 3, padding="same", activation="relu")(x)
+    y = layers.Conv2D(64, 3, padding="same")(y)
+    return layers.Activation("relu")(layers.Add()([x, y]))`);
+
+// ---------- SimCLR ----------
+Q("simclr","s","With N = 4 images (8 embeddings), how many candidates compete in the softmax for each row, and how many of them are negatives?",[
+ ["8 candidates, 7 negatives",0,"The diagonal (self) is masked to −inf, so it is not a candidate."],
+ ["7 candidates: 1 positive and 6 negatives, i.e., 2(N − 1)",1,"Correct."],
+ ["4 candidates, 3 negatives, since only the first augmented view of each image is used",0,"Both views of every image are in z."],
+ ["1 candidate",0,"No."]
+],"Rows i and i + N are the two views of the same image. Masking the diagonal stops the trivial self-match, which was the bug in your CL_Simple notebook.",
+`z = l2_normalize(np.concatenate([z_view1, z_view2]))   # (2N, d), N = 4
+sim = z @ z.T / tau
+np.fill_diagonal(sim, -np.inf)
+labels = np.r_[np.arange(N, 2*N), np.arange(N)]
+loss = cross_entropy(sim, labels)`);
+
+Q("simclr","s","After pretraining, the student calls the following. Which object should be used to produce features for the downstream classifier?",[
+ ["projection_head(encoder(x))",0,"z = g(h) has thrown away augmentation-related information. Use h."],
+ ["encoder(x), i.e., h before the projection head",1,"Correct. The paper finds h is more than 10% better than z under linear evaluation."],
+ ["projection_head alone, applied directly to the raw pixels without going through the encoder first",0,"The head expects encoder features, not pixels."],
+ ["A new randomly initialized encoder",0,"That would discard what was learned."]
+],"g(·) is only a training device: it gives the contrastive loss a space where invariance is enforced. Afterward it is thrown away. Linear evaluation then trains a linear layer on frozen h.",
+`encoder = create_encoder()                  # f(.)
+projection_head = create_projection_head()  # g(.)
+# ... contrastive training on projection_head(encoder(x)) ...
+features = ???(x_test)`);
+
+// ---------- Class 3 ----------
+Q("vae","s","What distribution does z follow when z_mean = 2.0 and z_log_var = log(0.25) ≈ −1.386?",[
+ ["N(2, 0.25²)",0,"exp(0.5 · log 0.25) = 0.5 is the standard deviation, so the variance is 0.25, not 0.25²."],
+ ["N(2, 0.25): mean 2, standard deviation 0.5",1,"Correct."],
+ ["N(0, 1), because ε is standard normal and the layer just passes the sampled noise through unchanged",0,"The noise is shifted by z_mean and scaled by σ."],
+ ["N(−1.386, 2)",0,"Mean and log-variance are swapped here."]
+],"z = μ + σ·ε with σ = exp(½·log σ²). Because ε is sampled outside the computation graph, gradients reach z_mean and z_log_var. That is the reparameterization trick.",
+`class Sampling(layers.Layer):
+    def call(self, inputs):
+        z_mean, z_log_var = inputs
+        epsilon = K.random_normal(shape=tf.shape(z_mean))
+        return z_mean + tf.exp(0.5 * z_log_var) * epsilon`);
+
+Q("vae","s","What value does kl_loss take when the encoder outputs z_mean = 0 and z_log_var = 0 for every input?",[
+ ["−0.5",0,"Inside the sum each term is 1 + 0 − 0 − 1 = 0."],
+ ["0, because q(z|x) equals the prior N(0, I)",1,"Correct. The encoder then carries no information about x."],
+ ["1 per latent dimension, because the identity covariance contributes one unit of divergence for each dimension",0,"The terms cancel to 0."],
+ ["Infinity",0,"No."]
+],"Per dimension: −½(1 + log σ² − μ² − σ²). At μ = 0, σ = 1 this is 0. If the KL term dominates (large β), the encoder is pushed toward exactly this output, which is posterior collapse.",
+`kl_loss = tf.reduce_mean(tf.reduce_sum(
+    -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var)), axis=1))`);
+
+Q("vae","s","In the KL line from the previous question, the student changes tf.reduce_sum(..., axis=1) to tf.reduce_mean(..., axis=1) with a 200-d latent. What is the effect?",[
+ ["None; sum and mean are equivalent inside a loss",0,"They differ by a factor equal to the latent size."],
+ ["The KL term shrinks 200×, so regularization is much weaker and the latent space less Gaussian",1,"Correct."],
+ ["The KL term grows 200× and the posterior collapses, because averaging over dimensions amplifies each of them",0,"Averaging divides the term. It does not multiply it."],
+ ["It raises a shape error",0,"Both reduce axis 1 and give the same shape."]
+],"The KL of a diagonal Gaussian is a sum over dimensions. Averaging silently reweights it relative to the reconstruction term, which works like changing β. This kind of bug is easy to miss when reading code.",
+`kl = tf.reduce_mean(tf.reduce_mean(            # was reduce_sum(..., axis=1)
+    -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var)), axis=1))`);
+
+Q("vae","s","The decoder input is a 2-d vector, and shape_before_flattening = (4, 4, 128). What is the shape of decoder_output?",[
+ ["(None, 8, 8, 1)",0,"There are three stride-2 transposed convolutions, not one."],
+ ["(None, 32, 32, 1)",1,"Correct. 4 → 8 → 16 → 32, then Conv2D(1) sets one channel."],
+ ["(None, 32, 32, 32), since the last transposed convolution has 32 filters and determines the channel count",0,"The final Conv2D(1, …) maps to one channel."],
+ ["(None, 2, 2, 1)",0,"Transposed stride-2 convolutions upsample. They do not downsample."]
+],"Dense(2,048) → Reshape(4, 4, 128) → three Conv2DTranspose layers with stride 2 → Conv2D(1, sigmoid). The decoder mirrors the encoder, so the output matches the 32×32×1 input.",
+`x = layers.Dense(np.prod(shape_before_flattening))(decoder_input)
+x = layers.Reshape(shape_before_flattening)(x)
+x = layers.Conv2DTranspose(128, (3,3), strides=2, activation="relu", padding="same")(x)
+x = layers.Conv2DTranspose(64,  (3,3), strides=2, activation="relu", padding="same")(x)
+x = layers.Conv2DTranspose(32,  (3,3), strides=2, activation="relu", padding="same")(x)
+decoder_output = layers.Conv2D(1, (3,3), strides=1, activation="sigmoid", padding="same")(x)`);
+
+Q("vae","s","Why is x_train passed as both the input and the target?",[
+ ["It is a bug; labels y_train should be the target",0,"Autoencoders need no labels."],
+ ["The network is trained to reconstruct its own input through the bottleneck",1,"Correct. It is unsupervised."],
+ ["Keras requires two copies of the data to compute gradients for the encoder and the decoder separately",0,"No such requirement exists."],
+ ["To double the effective batch size",0,"The batch size is set by batch_size."]
+],"The loss compares the decoder output with the input itself. Learning a good 2-d code is a side effect of having to squeeze the image through the bottleneck.",
+`autoencoder = models.Model(encoder_input, decoder(encoder_output))
+autoencoder.compile(optimizer="adam", loss="binary_crossentropy")
+autoencoder.fit(x_train, x_train, epochs=5, batch_size=100, shuffle=True,
+                validation_data=(x_test, x_test))`);
+
+Q("vae","s","What does this code produce when alpha runs from −3 to 3?",[
+ ["The same face with random noise added",0,"Nothing random is added. The shift is along a fixed direction."],
+ ["The face goes from less to more smiling; negative alpha removes the smile",1,"Correct."],
+ ["Faces of different people, since every step in latent space changes the identity",0,"Moving along an attribute direction mostly keeps the identity."],
+ ["An error, because alpha must be non-negative",0,"Negative values are valid. They subtract the feature."]
+],"smile_vec = mean(z of smiling faces) − mean(z of non-smiling faces), computed using CelebA attribute labels after training. This only works because the VAE latent space is continuous and roughly linear in attributes.",
+`smile_vec = z[smiling].mean(0) - z[~smiling].mean(0)
+for alpha in np.linspace(-3, 3, 7):
+    img = decoder.predict((z_face + alpha * smile_vec)[None])`);
+
+// ---------- Class 4 ----------
+Q("trans","s","Q, K and V have shape (batch = 2, heads = 8, seq = 10, d_k = 64). What is the shape of weights, and of output?",[
+ ["weights (2, 8, 64, 64); output (2, 8, 10, 64)",0,"QKᵀ contracts over d_k, leaving seq × seq."],
+ ["weights (2, 8, 10, 10); output (2, 8, 10, 64)",1,"Correct."],
+ ["weights (2, 8, 10, 10); output (2, 8, 10, 10), because the output keeps the shape of the attention matrix",0,"Multiplying by V restores the last dimension to d_v = 64."],
+ ["weights (2, 10, 10); output (2, 10, 64), because heads are summed before the softmax",0,"Heads stay separate until concatenation."]
+],"Each head has an n × n weight matrix whose rows sum to 1. The output is a weighted average of value vectors, so its last dimension is d_v.",
+`scores = tf.matmul(Q, K, transpose_b=True) / tf.math.sqrt(tf.cast(d_k, tf.float32))
+weights = tf.nn.softmax(scores, axis=-1)
+output = tf.matmul(weights, V)`);
+
+Q("trans","s","What does this mask allow, and where is it used?",[
+ ["Each token may attend to future tokens only; used in BERT",0,"It is lower-triangular, so it blocks the future."],
+ ["Token i attends to positions j ≤ i; a causal mask for GPT-style decoders",1,"Correct. Masked scores become −1e9, which is zero after softmax."],
+ ["Each token attends only to itself, which is used to stop information leaking between positions in an encoder",0,"Only the diagonal would be 1 in that case."],
+ ["It masks padding tokens",0,"A padding mask depends on the input. This one is fixed and triangular."]
+],"band_part(…, −1, 0) keeps the lower triangle (row i has ones in columns 0…i). The whole sequence is still processed in parallel during training, while each position sees only its past.",
+`n = tf.shape(x)[1]
+mask = tf.linalg.band_part(tf.ones((n, n)), -1, 0)   # lower triangle of 1s
+scores = scores + (1.0 - mask) * -1e9`);
+
+Q("trans","s","In this sinusoidal positional-encoding code, what is true about the columns of pe?",[
+ ["Every column has the same frequency",0,"The frequency depends on i: low dimensions oscillate fast and high ones slowly."],
+ ["Even columns are sin, odd are cos, frequency falling with column index",1,"Correct. Wavelengths range from 2π to 10000·2π."],
+ ["The values are learned during training, so they differ between models trained on different data",0,"They are computed by formula. Nothing is learned."],
+ ["Values grow without bound with position",0,"sin and cos stay in [−1, 1]."]
+],"Each (sin, cos) pair rotates as the position increases, so PE(pos + k) is a fixed linear map (a rotation) of PE(pos). pe is added to the token embeddings, not concatenated.",
+`pos = np.arange(max_len)[:, None]
+i = np.arange(0, d_model, 2)[None, :]
+angle = pos / np.power(10000, i / d_model)
+pe = np.zeros((max_len, d_model))
+pe[:, 0::2] = np.sin(angle)
+pe[:, 1::2] = np.cos(angle)`);
+
+Q("trans","s","In Keras MultiHeadAttention(num_heads=2, key_dim=256) applied to 256-d inputs, what is key_dim?",[
+ ["The total model width, split across the 2 heads (128 each)",0,"In Keras, key_dim is the size per head."],
+ ["The per-head size: each head projects to 256-d Q and K, 512 total",1,"Correct. Parameters: 3·(256·512 + 512) + (512·256 + 256) = 526,080."],
+ ["The number of tokens the layer can attend to, so longer sequences raise an error at runtime",0,"It is unrelated to sequence length."],
+ ["The vocabulary size",0,"No."]
+],"Foster’s GPT example uses MultiHeadAttention(num_heads, key_dim) with key_dim per head. The output dense layer projects the concatenated heads back to the input width. It is a common exam trap to read key_dim as the total.",
+`attn = layers.MultiHeadAttention(num_heads=2, key_dim=256, output_shape=256)
+out = attn(x, x, attention_mask=causal_mask)     # x: (batch, seq, 256)`);
+
+Q("trans","s","Which arrangement does this Transformer block use, and what are the two `+` operations?",[
+ ["Pre-LN; the + operations concatenate features",0,"Normalization is applied after the add here, and + is a residual sum."],
+ ["Post-LN: LayerNorm(x + Sublayer(x)), with residuals around attention and the FFN",1,"Correct. This is the original Transformer layout."],
+ ["There are no residual connections; + adds the positional encodings back in before each sub-layer",0,"Positional encodings are added once, at the input."],
+ ["Batch normalization with skip connections",0,"LayerNormalization normalizes per token, not across the batch."]
+],"Post-LN (shown here) applies the norm after the residual add. Pre-LN (GPT-2, ViT) normalizes the input to each sub-layer and tends to train more stably in deep stacks. Both use residual paths so gradients reach early layers.",
+`attn_out = self.attn(x, x, attention_mask=mask)
+out1 = self.ln_1(x + self.dropout_1(attn_out))
+ffn_out = self.ffn_2(self.ffn_1(out1))
+return self.ln_2(out1 + self.dropout_2(ffn_out))`);
+
+Q("trans","s","For bert-base-uncased, what does this code print?",[
+ ["['hello', 'world']",0,"The tokenizer adds special tokens."],
+ ["['[CLS]', 'hello', 'world', '[SEP]']",1,"Correct. BERT wraps every single sentence with [CLS] … [SEP]."],
+ ["['[CLS]', 'Hello', 'world', '[SEP]'], since an uncased tokenizer still keeps the original capitalization",0,"The uncased model lowercases its input."],
+ ["['hel', '##lo', 'wor', '##ld']",0,"Common words are whole tokens. ## marks a word-piece continuation for rarer words."]
+],"With sentence pairs it becomes [CLS] A [SEP] B [SEP], with token_type_ids 0 and 1, which is the BertViz setup from your homework.",
+`tok = AutoTokenizer.from_pretrained("bert-base-uncased")
+ids = tok("Hello world")["input_ids"]
+print(tok.convert_ids_to_tokens(ids))`);
+
+Q("trans","s","bert-base has 12 layers and 12 heads. What is len(out.attentions), and what is the shape of out.attentions[0] for a 15-token input?",[
+ ["12; (1, 15, 15)",0,"The head dimension is missing."],
+ ["12; (1, 12, 15, 15): batch, heads, query, key",1,"Correct."],
+ ["144, one tensor per head, each of shape (15, 15), returned as a flat list over layers and heads",0,"There is one tensor per layer, with the heads stacked inside it."],
+ ["1; (12, 12, 15, 15)",0,"It is a tuple with one tensor per layer."]
+],"Each [layer][0, h] is a 15 × 15 row-stochastic matrix. BertViz’s model view draws this as a 12 × 12 grid of heads.",
+`out = model(**inputs, output_attentions=True)
+print(len(out.attentions), out.attentions[0].shape)`);
+
+// ---------- Class 5 ----------
+Q("ar","s","Input shape is (batch, 20, 100). What are the output shape and parameter count of each LSTM?",[
+ ["A: (batch, 128); B: (batch, 20, 128); 51,712 parameters each",0,"The outputs are swapped, and an LSTM has 4 gate blocks."],
+ ["A: (batch, 20, 128); B: (batch, 128); 117,248 parameters each",1,"Correct. 4·(128·(100 + 128) + 128) = 117,248."],
+ ["Both (batch, 20, 128), because return_sequences only changes what is returned during training, not inference",0,"Without return_sequences, only the last time step’s output is returned."],
+ ["A: (batch, 20, 100); B: (batch, 100)",0,"The units (128) set the output width, not the input width."]
+],"An LSTM has 4 blocks (input, forget and output gates, plus the candidate), each with input weights, recurrent weights and a bias. Stacking LSTMs needs return_sequences=True on every layer except the last.",
+`A = layers.LSTM(128, return_sequences=True)(x)
+B = layers.LSTM(128)(x)`);
+
+Q("ar","s","What does this optimizer setting address in RNN training?",[
+ ["Vanishing gradients",0,"Clipping caps large gradients. It cannot enlarge small ones."],
+ ["Exploding gradients: gradient norms above 1.0 are rescaled to 1.0",1,"Correct."],
+ ["Overfitting, by adding weight decay to the recurrent kernel so that the weights stay small",0,"clipnorm is not weight decay."],
+ ["Slow convergence, by doubling the learning rate whenever the loss plateaus",0,"No."]
+],"BPTT multiplies many Jacobians, so occasional gradient spikes can wreck training. clipnorm keeps the gradient direction but bounds its length. Vanishing gradients instead need gating (LSTM, GRU), attention or skip connections.",
+`optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3, clipnorm=1.0)
+model.compile(optimizer=optimizer, loss="sparse_categorical_crossentropy")`);
+
+Q("ar","s","Given the next-token probabilities [0.5, 0.3, 0.2], what does sample_with_temperature compute at temperature 0.5?",[
+ ["[0.5, 0.3, 0.2], unchanged",0,"That is temperature 1.0."],
+ ["≈[0.658, 0.237, 0.105]: sharper, favoring the top token",1,"Correct. p^(1/T) renormalized, which squares and renormalizes at T = 0.5."],
+ ["≈[0.415, 0.322, 0.263], flatter, because a lower temperature always spreads probability more evenly",0,"That is T = 2.0. Lower T sharpens the distribution."],
+ ["[1, 0, 0]",0,"That is the limit T → 0 (greedy argmax)."]
+],"Temperature controls diversity in autoregressive generation, for text with LSTMs or GPT. A low T is safe and repetitive; a high T is creative and error-prone.",
+`def sample_with_temperature(probs, temperature):
+    probs = probs ** (1 / temperature)
+    probs = probs / np.sum(probs)
+    return np.random.choice(len(probs), p=probs)`);
+
+Q("ar","m","In this PixelCNN masked-convolution layer (kernel_size = 3), which statements are correct? Select all that apply.",[
+ ["For mask_type 'A', the center and everything to its right in the middle row stay 0",1,"Correct. Only rows above and pixels to the left are set to 1."],
+ ["For mask_type 'B', the center weight is also set to 1",1,"Correct. That is the only difference from Type A."],
+ ["All rows below the center are zeroed for both types",1,"Correct. Pixels below come later in raster order."],
+ ["The mask is applied once at initialization, so the masked weights can grow back during training",0,"The mask multiplies the kernel at every forward pass, so masked weights never take effect."]
+],"The resulting 3×3 Type A mask is [[1, 1, 1], [1, 0, 0], [0, 0, 0]] and Type B is [[1, 1, 1], [1, 1, 0], [0, 0, 0]]. Multiplying the kernel by the mask on every call enforces the autoregressive ordering.",
+`def build(self, input_shape):
+    self.conv.build(input_shape)
+    kernel_shape = self.conv.kernel.get_shape()
+    self.mask = np.zeros(shape=kernel_shape)
+    self.mask[: kernel_shape[0] // 2, ...] = 1.0
+    self.mask[kernel_shape[0] // 2, : kernel_shape[1] // 2, ...] = 1.0
+    if self.mask_type == "B":
+        self.mask[kernel_shape[0] // 2, kernel_shape[1] // 2, ...] = 1.0
+
+def call(self, inputs):
+    self.conv.kernel.assign(self.conv.kernel * self.mask)
+    return self.conv(inputs)`);
+
+Q("ar","s","How many forward passes does this PixelCNN generation loop make for one 32×32 image, and why can it not be parallelized?",[
+ ["1, because the network sees the whole image at once",0,"Each pixel must be sampled before the next one can be predicted."],
+ ["1,024: each pixel depends on the ones just sampled",1,"Correct. Sampling is sequential, even though training was parallel."],
+ ["32, one per row, because all pixels in a row are predicted together from the rows above them",0,"Masks condition each pixel on the pixels to its left in the same row too."],
+ ["10, one per epoch",0,"No."]
+],"Training is parallel thanks to masking: all targets are known. Generation is sequential, since pixel (r, c) needs the sampled values before it. This is the main cost of autoregressive models, the same as token-by-token GPT decoding.",
+`generated = np.zeros((1, 32, 32, 1))
+for row in range(32):
+    for col in range(32):
+        probs = model.predict(generated, verbose=0)[:, row, col, :]
+        generated[:, row, col, 0] = sample_with_temperature(probs[0], 1.0) / 255.0`);
+
+// ---------- Class 6 ----------
+Q("mm","s","What does probs[0] represent?",[
+ ["Probabilities over the 2 images for text 0",0,"logits_per_image has one row per image and one column per text."],
+ ["A distribution over the 3 captions for image 0: zero-shot classification",1,"Correct."],
+ ["Pixel-wise segmentation probabilities for image 0, one value per image patch",0,"CLIP gives image-level similarities only."],
+ ["The CLIP training loss",0,"No loss is computed here."]
+],"logits = scaled cosine similarity of image and text embeddings, shape (n_images, n_texts) = (2, 3). The softmax over texts gives class probabilities with no training on these classes.",
+`texts = ["a photo of a cat", "a photo of a dog", "a photo of a car"]
+inputs = processor(text=texts, images=[img1, img2], return_tensors="pt", padding=True)
+outputs = model(**inputs)
+probs = outputs.logits_per_image.softmax(dim=1)     # shape (2, 3)`);
+
+Q("mm","s","Why does the CLIP loss average two cross-entropies, one on logits and one on logits.T?",[
+ ["To regularize the temperature",0,"The temperature is a separate learned scalar."],
+ ["Symmetry: rows match images to texts, columns texts to images",1,"Correct. Both encoders get a retrieval signal."],
+ ["Because cross-entropy only accepts square matrices, so the transpose fixes the shape mismatch between modalities",0,"The matrix is already N × N."],
+ ["To double the batch size",0,"No."]
+],"Positives sit on the diagonal (labels = arange(N)) and every other entry in the row and column is a negative. It is the same idea as NT-Xent in SimCLR, but across two modalities.",
+`logits = (image_emb @ text_emb.T) * logit_scale.exp()
+labels = torch.arange(N)
+loss = (F.cross_entropy(logits, labels) + F.cross_entropy(logits.T, labels)) / 2`);
+
+Q("mm","s","A 224×224×3 batch is patchified as follows. What is the shape of patches, and the ViT sequence length after adding [class]?",[
+ ["(B, 16, 16, 588); 257",0,"The patch size is 16, so there are 224/16 = 14 patches per side."],
+ ["(B, 14, 14, 768); 197",1,"Correct. 16·16·3 = 768 values per patch; 196 patches plus [class] = 197."],
+ ["(B, 224, 224, 3); 50,176, since extract_patches returns one token per pixel",0,"It returns one vector per patch."],
+ ["(B, 7, 7, 3,072); 50",0,"That would be 32×32 patches."]
+],"Next, the patches are reshaped to (B, 196, 768), linearly projected to d_model, a learnable [class] token is prepended, and learnable 1-D position embeddings are added.",
+`patches = tf.image.extract_patches(images, sizes=[1,16,16,1], strides=[1,16,16,1],
+                                   rates=[1,1,1,1], padding="VALID")`);
+
+Q("mm","s","What is the output of this gated cross-attention block at initialization?",[
+ ["Random, because the new layers are randomly initialized",0,"tanh(0) = 0 cancels their output."],
+ ["Exactly y: the frozen LM is unchanged at the start",1,"Correct. The gate opens gradually as α is learned."],
+ ["Zero, because the gate removes the language-model stream entirely at the beginning of training",0,"The residual y passes through untouched."],
+ ["y multiplied by 0.5",0,"No."]
+],"This is Flamingo’s GATED XATTN-DENSE layer. The vision-conditioned path is added through a learnable tanh gate, so pretrained text ability is kept at the start and visual information is mixed in only as it becomes useful.",
+`self.alpha = tf.Variable(0.0)          # learnable, initialized at 0
+def call(self, y, visual_tokens):
+    return y + tf.tanh(self.alpha) * self.xattn(y, visual_tokens)`);
+
+// ---------- Class 7 ----------
+Q("diff","s","In this cosine schedule, why is signal_rates² + noise_rates² = 1 for every diffusion time?",[
+ ["It is a coincidence of the chosen angles",0,"It holds for any angle, since cos² + sin² = 1."],
+ ["To keep noisy images at unit variance at every noise level",1,"Correct. The variance-preserving property."],
+ ["To make the reverse process deterministic, which is what DDIM sampling requires at every step",0,"Determinism comes from DDIM with σ = 0, not from the schedule."],
+ ["To make the noise rate decrease over time",0,"The noise rate increases from about 0.31 to 1.0 as t goes from 0 to 1."]
+],"x_t = signal·x₀ + noise·ε with Var(x₀) = Var(ε) = 1 (after normalization). Then Var(x_t) = signal² + noise² = 1. The offset keeps the signal rate below 0.95 at t = 0 and the noise rate below 1 until the end, which avoids degenerate steps.",
+`def offset_cosine_diffusion_schedule(diffusion_times):
+    start_angle = tf.acos(0.95)
+    end_angle = tf.acos(0.02)
+    angles = start_angle + diffusion_times * (end_angle - start_angle)
+    signal_rates = tf.cos(angles)
+    noise_rates = tf.sin(angles)
+    return noise_rates, signal_rates`);
+
+Q("diff","m","Read this diffusion train_step. Which statements are correct? Select all that apply.",[
+ ["Each image gets its own random diffusion time in [0, 1)",1,"Correct. All noise levels are trained in every batch."],
+ ["noisy_images is drawn in one shot from the diffusion kernel, without looping over t",1,"Correct."],
+ ["The network’s target is the added noise, and the loss compares it with the prediction",1,"Correct. This is the ε-prediction reparameterization."],
+ ["The network receives noise_rates² as its second input, which acts as the time or noise-level embedding",1,"Correct. One U-Net serves every noise level."],
+ ["Gradients flow into the noise schedule, so the signal and noise rates are learned along with the U-Net weights",0,"The schedule is a fixed function with no trainable variables."]
+],"This is the whole DDPM/DDIM training loop: sample x₀, t and ε; form x_t = s(t)·x₀ + n(t)·ε; regress ε̂(x_t, t) onto ε. Foster uses mean absolute error with AdamW.",
+`diffusion_times = tf.random.uniform(shape=(batch_size, 1, 1, 1), minval=0.0, maxval=1.0)
+noise_rates, signal_rates = self.diffusion_schedule(diffusion_times)
+noisy_images = signal_rates * images + noise_rates * noises
+with tf.GradientTape() as tape:
+    pred_noises = self.network([noisy_images, noise_rates**2], training=True)
+    noise_loss = self.loss(noises, pred_noises)`);
+
+Q("diff","s","What does pred_images represent in this denoise function?",[
+ ["The image one step less noisy, x_{t−1}",0,"The formula inverts the whole kernel, so it estimates x₀."],
+ ["An estimate of the clean image x₀, from inverting x_t = s·x₀ + n·ε",1,"Correct."],
+ ["The noise that should be added at the next step of the forward process, scaled by the signal rate",0,"pred_noises is the noise estimate. pred_images is the clean estimate."],
+ ["A sample from the prior N(0, I)",0,"No."]
+],"Solving x_t = s·x₀ + n·ε for x₀ gives x̂₀ = (x_t − n·ε̂)/s. It can be blurry at high noise, which is why sampling re-noises it and repeats over many steps.",
+`def denoise(self, noisy_images, noise_rates, signal_rates, training):
+    pred_noises = self.network([noisy_images, noise_rates**2], training=training)
+    pred_images = (noisy_images - noise_rates * pred_noises) / signal_rates
+    return pred_noises, pred_images`);
+
+Q("diff","m","Read this reverse-diffusion loop. Which statements are correct? Select all that apply.",[
+ ["It starts from pure Gaussian noise",1,"Correct. initial_noise ~ N(0, I)."],
+ ["Each step re-noises x̂₀ to the next, lower noise level using the predicted noise",1,"Correct."],
+ ["No fresh random noise is added inside the loop, so it is deterministic DDIM sampling",1,"Correct. The same initial_noise always gives the same image."],
+ ["diffusion_steps must equal the 1,000 noise levels used in training, or the model fails",0,"Times are continuous, so any number of steps (e.g., 20) works."]
+],"Each step: (1) predict noise and x̂₀ at time t; (2) move to t − 1/steps; (3) set x_{t−Δ} = s(t−Δ)·x̂₀ + n(t−Δ)·ε̂. Fewer steps run faster at slightly lower quality.",
+`current_images = initial_noise
+step_size = 1.0 / diffusion_steps
+for step in range(diffusion_steps):
+    diffusion_times = tf.ones((num_images, 1, 1, 1)) - step * step_size
+    noise_rates, signal_rates = self.diffusion_schedule(diffusion_times)
+    pred_noises, pred_images = self.denoise(current_images, noise_rates, signal_rates, training=False)
+    next_noise_rates, next_signal_rates = self.diffusion_schedule(diffusion_times - step_size)
+    current_images = next_signal_rates * pred_images + next_noise_rates * pred_noises`);
+
+Q("diff","s","With this linear DDPM schedule, what is roughly alpha_bars[-1], and what does it tell you?",[
+ ["About 0.5: half the signal survives",0,"Far too large."],
+ ["About 4e−5: signal rate √ᾱ ≈ 0.006, so x_T is essentially pure noise",1,"Correct. q(x_T | x₀) ≈ N(0, I)."],
+ ["Exactly 0, because cumprod of numbers below 1 always reaches 0 after enough terms in floating point",0,"It is tiny but not exactly 0 (4.04e−5)."],
+ ["0.98, since 1 − 0.02",0,"That is a single step’s α, not the cumulative product."]
+],"ᾱ_t = ∏(1 − β_s) is the fraction of signal variance left. Training samples t uniformly and uses √ᾱ_t·x₀ + √(1 − ᾱ_t)·ε. Generation can start from N(0, I) only because ᾱ_T is about 0.",
+`betas = np.linspace(1e-4, 0.02, 1000)
+alphas = 1.0 - betas
+alpha_bars = np.cumprod(alphas)
+print(alpha_bars[-1])`);
+
+Q("diff","s","The Keras diffusion model adapts a Normalization layer to the training images and calls this denormalize function before display. Why?",[
+ ["To convert the images to grayscale",0,"Normalization does not change the channels."],
+ ["Train on unit-variance images to match the noise; map outputs back to pixels",1,"Correct."],
+ ["To remove the noise from generated images, which is an extra denoising step the U-Net cannot do itself",0,"Denormalizing is just a linear rescale. It does no denoising."],
+ ["To make the diffusion process learnable",0,"No."]
+],"The variance-preserving schedule assumes Var(x₀) ≈ 1. Normalizing the data makes the signal and noise terms comparable. Clipping to [0, 1] after denormalizing gives displayable pixels.",
+`self.normalizer = layers.Normalization()
+model.normalizer.adapt(train_images)
+
+def denormalize(self, images):
+    images = self.normalizer.mean + images * self.normalizer.variance**0.5
+    return tf.clip_by_value(images, 0.0, 1.0)`);
+
 // Flashcards: F(topic, front, back)
 F("intro","Discriminative vs generative model: what does each estimate?","Discriminative: p(y | x), a label given an input (logistic regression, CRFs, decision trees). Generative: p(x), or p(x | y) when conditional. Only a generative model can sample new observations.");
 F("intro","Why must a generative model be probabilistic?","It needs a random component to produce varied outputs. A fixed calculation, such as averaging pixels, always gives the same result.");
@@ -2127,7 +2551,7 @@ const KEY="seas8525-bank-v1";
 let state={answers:{},shuffle:false};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.answers)state=s}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
-let filt={topics:new Set(),type:"all",open:false,wrong:false};
+let filt={topics:new Set(),type:"all",open:false,wrong:false,code:false};
 const L="ABCDEFGH";
 
 function grade(q,sel){const corr=q.opts.map((o,i)=>o.c?i:-1).filter(i=>i>=0);
@@ -2156,7 +2580,7 @@ function cardHTML(q){
     ${done?`<div class="exp"><h3>Answer</h3><p class="answer">${key}</p><h3>Explanation</h3><p>${esc(q.exp)}</p>${labsFor(q.id).map(l=>`<details class="lab"><summary>Logic &amp; code: ${esc(l.title)}</summary>${labBody(l)}</details>`).join("")}</div>`:""}
   </article>`}
 
-function visible(){let list=QS.filter(q=>(!filt.topics.size||filt.topics.has(q.topic))&&(filt.type==="all"||q.type===filt.type));
+function visible(){let list=QS.filter(q=>(!filt.topics.size||filt.topics.has(q.topic))&&(filt.type==="all"||q.type===filt.type)&&(!filt.code||q.code));
   if(filt.open)list=list.filter(q=>!(state.answers[q.id]&&state.answers[q.id].checked));
   if(filt.wrong)list=list.filter(q=>{const a=state.answers[q.id];return a&&a.checked&&grade(q,a.sel)!=="ok"});
   if(state.shuffle)list=shuffled(list,state.seed||1);
@@ -2167,7 +2591,7 @@ function render(){const list=visible();const el=document.getElementById("list");
 function rerender(id){const q=QS.find(x=>x.id===id);const old=document.getElementById(id);
   const tmp=document.createElement("div");tmp.innerHTML=cardHTML(q);old.replaceWith(tmp.firstElementChild);score()}
 
-function score(){const scope=QS.filter(q=>(!filt.topics.size||filt.topics.has(q.topic))&&(filt.type==="all"||q.type===filt.type));
+function score(){const scope=QS.filter(q=>(!filt.topics.size||filt.topics.has(q.topic))&&(filt.type==="all"||q.type===filt.type)&&(!filt.code||q.code));
   let ok=0,bad=0;scope.forEach(q=>{const a=state.answers[q.id];if(a&&a.checked){grade(q,a.sel)==="ok"?ok++:bad++}});
   const done=ok+bad;document.getElementById("s-ok").textContent=ok;document.getElementById("s-bad").textContent=bad;
   document.getElementById("s-done").textContent=done;document.getElementById("s-total").textContent=scope.length;
@@ -2196,6 +2620,8 @@ function setType(t){filt.type=t;[["f-all","all"],["f-s","s"],["f-m","m"]].forEac
 document.getElementById("f-all").onclick=()=>setType("all");
 document.getElementById("f-s").onclick=()=>setType("s");
 document.getElementById("f-m").onclick=()=>setType("m");
+document.getElementById("f-code").onclick=e=>{filt.code=!filt.code;e.currentTarget.setAttribute("aria-pressed",filt.code);render()};
+document.getElementById("f-code").insertAdjacentHTML("beforeend",` <span style="opacity:.7">${QS.filter(q=>q.code).length}</span>`);
 document.getElementById("f-open").onclick=e=>{filt.open=!filt.open;filt.wrong=false;e.currentTarget.setAttribute("aria-pressed",filt.open);document.getElementById("f-wrong").setAttribute("aria-pressed",false);render()};
 document.getElementById("f-wrong").onclick=e=>{filt.wrong=!filt.wrong;filt.open=false;e.currentTarget.setAttribute("aria-pressed",filt.wrong);document.getElementById("f-open").setAttribute("aria-pressed",false);render()};
 const shBtn=document.getElementById("shuffle");shBtn.setAttribute("aria-pressed",!!state.shuffle);
@@ -2274,7 +2700,7 @@ ltb.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return
   if(!t)ltop.clear();else ltop.has(t)?ltop.delete(t):ltop.add(t);
   ltb.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.t?ltop.has(x.dataset.t):!ltop.size));renderLabs()});
 document.getElementById("labs").addEventListener("click",e=>{const b=e.target.closest(".qlink");if(!b)return;
-  filt.topics.clear();filt.type="all";filt.open=false;filt.wrong=false;
+  filt.topics.clear();filt.type="all";filt.open=false;filt.wrong=false;filt.code=false;document.getElementById("f-code").setAttribute("aria-pressed",false);
   document.querySelectorAll("#topics button").forEach(x=>x.setAttribute("aria-pressed",!x.dataset.t));
   [["f-all",true],["f-s",false],["f-m",false],["f-open",false],["f-wrong",false]].forEach(([id,v])=>document.getElementById(id).setAttribute("aria-pressed",v));
   render();setMode("quiz");const el=document.getElementById(b.dataset.q);if(el)el.scrollIntoView({block:"start"})});
