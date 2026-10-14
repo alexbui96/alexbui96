@@ -18,11 +18,11 @@ The answer key and explanations for each class follow its questions, so you can 
 - ○ **C.** It is equivalent to a conditional generative model p(x | y) once training converges, because Bayes’ rule lets us invert any classifier
 - ○ **D.** It is a generative model because it was trained on images
 
-**Q2.** ☐ *Select all that apply.* According to the lecture, which properties are required for a model to count as a true generative model? Select all that apply.
+**Q2.** ☐ *Select all that apply.* Which properties are required for a model to count as a true generative model? Select all that apply.
 
-- ☐ **A.** It must be a fixed computation, such as averaging the pixel values of the training images, so the output is reproducible
-- ☐ **B.** It must be probabilistic, with a random component, so it can produce varied outputs
-- ☐ **C.** It must use labeled data so that each generated sample has a known class
+- ☐ **A.** It must use labeled data so that each generated sample has a known class
+- ☐ **B.** It must be a fixed computation, such as averaging the pixel values of the training images, so the output is reproducible
+- ☐ **C.** It must be probabilistic, with a random component, so it can produce varied outputs
 - ☐ **D.** It must be able to generate novel observations that look like they were drawn from p_data
 
 **Q3.** ○ *Single answer.* In the world-map “Hello World” example, the model family is the set of uniform distributions over axis-aligned boxes. How many parameters does each density p_θ in this parametric family have, and what are they?
@@ -61,42 +61,42 @@ The answer key and explanations for each class follow its questions, so you can 
 - ○ **C.** p(x) only, since a label cannot influence a generative model once it has been trained
 - ○ **D.** p(x | y), the probability of an observation given a label
 
-**Q8.** ○ *Single answer.* Representation learning is motivated in the lecture with the “describe yourself in ~10 features” analogy and the biscuit-tin example. What is the core idea?
+**Q8.** ○ *Single answer.* A dataset of biscuit-tin photos varies in only two ways: height and width. What is the core idea of representation learning in this setting?
 
-- ○ **A.** Increase the dimensionality of the data so that the classes become linearly separable for a downstream discriminator
-- ○ **B.** Hand-code the important features (e.g., height, width) so the machine does not need to learn them
-- ○ **C.** Encode data into a low-dimensional latent space and learn a mapping from latent points back to data
+- ○ **A.** Hand-code the important features (e.g., height, width) so the machine does not need to learn them
+- ○ **B.** Encode data into a low-dimensional latent space and learn a mapping from latent points back to data
+- ○ **C.** Increase the dimensionality of the data so that the classes become linearly separable for a downstream discriminator
 - ○ **D.** Store every training image in a lookup table and retrieve the nearest one at generation time
 
-**Q9.** ☐ *Select all that apply.* Which reasons does the lecture give for why generative modeling of high-dimensional data is hard? Select all that apply.
+**Q9.** ☐ *Select all that apply.* Why is generative modeling of high-dimensional data hard? Select all that apply.
 
-- ☐ **A.** Training data covers only a sparse subset of the possible observations
-- ☐ **B.** The true distribution lives in an exponentially high-dimensional space
-- ☐ **C.** Explicitly modeling the full dimensionality, i.e., computing p_θ(x) directly, is generally intractable
-- ☐ **D.** The sample space is discrete, so densities cannot be defined
-- ☐ **E.** Discriminative models already solve the problem, so there is little demand for better generative models from industry or research
+- ☐ **A.** The sample space is discrete, so densities cannot be defined
+- ☐ **B.** Explicitly modeling the full dimensionality, i.e., computing p_θ(x) directly, is generally intractable
+- ☐ **C.** Discriminative models already solve the problem, so there is little demand for better generative models from industry or research
+- ☐ **D.** Training data covers only a sparse subset of the possible observations
+- ☐ **E.** The true distribution lives in an exponentially high-dimensional space
 
-**Q10.** ○ *Single answer.* The lecture lists three desirable properties of a generative model p_model. Which set is correct?
+**Q10.** ○ *Single answer.* Which three properties make a generative model p_model useful?
 
-- ○ **A.** Convexity, sparsity, and calibration
-- ○ **B.** Determinism, reproducibility, and explainability, since outputs should be identical across runs
-- ○ **C.** Accuracy, generation, and representation
-- ○ **D.** Speed, memory efficiency, and differentiability
+- ○ **A.** Determinism, reproducibility, and explainability, since outputs should be identical across runs
+- ○ **B.** Speed, memory efficiency, and differentiability
+- ○ **C.** Convexity, sparsity, and calibration
+- ○ **D.** Accuracy, generation, and representation
 
-**Q11.** ○ *Single answer.* Which ordering of the Generative AI project life cycle matches the lecture?
+**Q11.** ○ *Single answer.* Which ordering of the Generative AI project life cycle is correct?
 
 - ○ **A.** Identify use case → Experiment & select → Adapt & augment → Evaluate → Deploy → Monitor
-- ○ **B.** Collect data → Train a new model from scratch → Evaluate on a held-out set → Deploy
-- ○ **C.** Experiment & select → Identify use case → Deploy & integrate → Adapt & augment → Monitor → Evaluate
+- ○ **B.** Experiment & select → Identify use case → Deploy & integrate → Adapt & augment → Monitor → Evaluate
+- ○ **C.** Collect data → Train a new model from scratch → Evaluate on a held-out set → Deploy
 - ○ **D.** Identify use case → Deploy the base model → Fine-tune on production logs → Monitor drift
 
-**Q12.** ☐ *Select all that apply.* The healthcare and military ethics comparison (Oniani et al., 2023) identified shared core principles. Which of the following were listed as shared principles? Select all that apply.
+**Q12.** ☐ *Select all that apply.* The healthcare and military ethics comparison (Oniani et al., 2023) identified shared core principles. Which of the following are shared principles? Select all that apply.
 
-- ☐ **A.** Governability
-- ☐ **B.** Equity
-- ☐ **C.** Maximum autonomy without human oversight
-- ☐ **D.** Profitability
-- ☐ **E.** Traceability
+- ☐ **A.** Profitability
+- ☐ **B.** Governability
+- ☐ **C.** Traceability
+- ☐ **D.** Equity
+- ☐ **E.** Maximum autonomy without human oversight
 
 **Q13.** ○ *Single answer.* In Dual Diffusion Implicit Bridges (DDIBs) for image-to-image translation (e.g., tiger → cat), how is the translation achieved?
 
@@ -154,32 +154,32 @@ The answer key and explanations for each class follow its questions, so you can 
 - ☐ **C.** Clustering, e.g., grouping elephants and zebras without labels
 - ☐ **D.** Generative modeling, which learns to produce new data similar to the training set
 
-**Q21.** ○ *Single answer.* Why did industry historically favor discriminative models over generative ones, according to the lecture?
+**Q21.** ○ *Single answer.* Why did industry historically favor discriminative models over generative ones?
 
-- ○ **A.** Generative models cannot run on GPUs
+- ○ **A.** They were easier to apply to practical tasks, e.g., doctors wanted diagnoses, not new images
 - ○ **B.** Generative models were illegal to deploy
-- ○ **C.** They were easier to apply to practical tasks, e.g., doctors wanted diagnoses, not new images
-- ○ **D.** Discriminative models need no training data, while every generative model needs millions of labeled examples
+- ○ **C.** Discriminative models need no training data, while every generative model needs millions of labeled examples
+- ○ **D.** Generative models cannot run on GPUs
 
 
 ### Answer key — Class 1 · Introduction to Generative AI
 
 **Q1 → A**
 
-Discriminative (conditional) models such as logistic regression, CRFs and decision trees model p(y|x) directly and learn decision boundaries. Generative models model p(x), or p(x|y) when conditional, and sampling from that distribution is what produces new observations. Foster’s point is that even a perfect Van Gogh classifier only outputs probabilities against existing images.
+Discriminative (conditional) models such as logistic regression, CRFs and decision trees model p(y|x) directly and learn decision boundaries. Generative models model p(x), or p(x|y) when conditional, and sampling from that distribution is what produces new observations. Concretely, a classifier is a function f(x) → [0, 1]. To produce a painting you would have to search or optimize over x, and its output says nothing about which x are realistic. See the code below: the generative model can both classify (via Bayes) and sample.
 
 - A: ✓ Correct. A discriminative model only learns the conditional p(y|x); it never models how x itself is distributed, so it cannot sample new x.
 - B: ✗ Sampling from p(y|x) yields labels, not images. Temperature does not change what space you sample in.
-- C: ✗ Bayes’ rule needs p(x) as well; a classifier alone does not give you p(x|y). The lecture’s “word of caution”: even a perfect discriminator has no idea how to create a painting.
+- C: ✗ Inverting with Bayes needs p(x|y) = p(y|x)p(x)/p(y), and the classifier never learned p(x). Without p(x) there is nothing to sample from.
 - D: ✗ Training on images does not make a model generative; what matters is whether it models p(x) (or p(x|y)).
 
-**Q2 → B, D**
+**Q2 → C, D**
 
-The slides list the goals of generative modeling: novel observations, a stochastic component, the ability to handle combinatorially many arrangements, and non-fixed logic. A generative model must sample variations, so it has to be probabilistic.
+A generative model is a distribution p_model(x) that we draw samples from. Drawing is random, so two draws give two different x. A deterministic function g() has a single output: it is a point mass, which cannot cover a whole distribution of plausible images. The novelty requirement rules out memorization, since a model that returns training images exactly has p_model concentrated on the training set.
 
-- A: ✗ This is the textbook example of what is not generative. Averaging pixels is deterministic and yields one output.
-- B: ✓ Correct. The “generative mandate”: deterministic calculations always return the same output.
-- C: ✗ Generative modeling is usually unsupervised; labels are optional and only needed for conditional generation.
+- A: ✗ Generative modeling is usually unsupervised; labels are optional and only needed for conditional generation.
+- B: ✗ This is the textbook example of what is not generative. Averaging pixels is deterministic and yields one output.
+- C: ✓ Correct. The “generative mandate”: deterministic calculations always return the same output.
 - D: ✓ Correct. The goal is new observations that mimic the training-data patterns, not copies of them.
 
 **Q3 → D**
@@ -193,7 +193,7 @@ A parametric model is a family of densities p_θ(x) described by a finite number
 
 **Q4 → C**
 
-For independent observations L(θ|X) = ∏ p_θ(x_i). The lecture’s example: a box covering only the left half has likelihood 0 because it could not possibly have generated points observed on the right half.
+For independent observations L(θ|X) = ∏ p_θ(x_i). Under a uniform box, any point outside has density 0, so one such point makes the whole product 0 (log-likelihood −∞). The code below evaluates three boxes on the same data.
 
 - A: ✗ The likelihood of i.i.d. data is a product, not an average.
 - B: ✗ Likelihood is not the fraction of area covered. It depends on the density at the observed points.
@@ -205,7 +205,7 @@ For independent observations L(θ|X) = ∏ p_θ(x_i). The lecture’s example: a
 MLE finds θ̂ = argmax_θ ℓ(θ|X). Equivalently, generative modeling minimizes the negative log-likelihood, where θ are the network weights. The log is used because multiplying thousands of small terms is numerically unstable.
 
 - A: ✗ Neural-network log-likelihoods are generally non-convex. The log does not make them convex.
-- B: ✓ Correct. This is the computational reason the slides give, and sums are also easier to differentiate.
+- B: ✓ Correct. The code below shows 1,000 probabilities multiplying to exactly 0.0 while the log-sum is a normal number. Sums are also easier to differentiate.
 - C: ✗ Densities can exceed 1. That is not the reason for using logs.
 - D: ✗ Log is strictly monotonic, so the argmax is unchanged.
 
@@ -221,59 +221,59 @@ The three approaches are: (1) constrained explicit, where the density is modeled
 
 **Q7 → D**
 
-The conditional generative model estimates p(x|y). The slide calls this “guided generation”: condition on a label to choose what kind of observation is sampled.
+The conditional generative model estimates p(x|y). Sampling from p(x|y=apple) restricts generation to the slice of data space with that label. Classifier-free guidance in diffusion models is the same idea in practice.
 
 - A: ✗ The class prior tells you how common apples are. It cannot generate an apple.
 - B: ✗ That is the discriminative objective.
 - C: ✗ Conditioning is a standard way to guide generation (e.g., classifier-free guidance in diffusion).
 - D: ✓ Correct. Conditioning on y = apple steers sampling toward apple images.
 
-**Q8 → C**
+**Q8 → B**
 
 Rather than modeling pixels directly, we model a compact latent space where each point summarizes an observation. Sampling a new latent point and decoding it produces new data, including tins not in the training set. Editing the latent point (e.g., increasing height) makes targeted, intuitive changes.
 
-- A: ✗ Kernel-style lifting is a different idea. Representation learning here compresses.
-- B: ✗ The slides stress that a machine must identify latent features and the mapping itself, which is nontrivial.
-- C: ✓ Correct. Height and width form a 2-D latent space for tins, and a learned decoder maps (h, w) back to pixels.
+- A: ✗ The point is to learn the latent factors and the decoder from data. Hand-coding does not scale to factors you cannot name, such as lighting, pose or style.
+- B: ✓ Correct. Height and width form a 2-D latent space for tins, and a learned decoder maps (h, w) back to pixels.
+- C: ✗ Kernel-style lifting is a different idea. Representation learning here compresses.
 - D: ✗ That is memorization, which cannot produce novel tins.
 
-**Q9 → A, B, C**
+**Q9 → B, D, E**
 
-The four slide bullets are: high-dimensional space, sparse observations, the need for creative generalization (novelty balanced with plausibility), and intractable explicit modeling.
+A 64×64 RGB image lives in a 12,288-dimensional space with 256^12288 possible pixel settings, almost all of which look like noise. Even millions of images cover a vanishingly small fraction of that space. Computing p(x) means integrating over latent variables or normalizing over the whole space, which has no closed form for a neural network. Each model family works around this in a different way: an ordering (autoregressive), a bound (VAE, diffusion), or no density at all (GAN).
 
-- A: ✓ Correct.
-- B: ✓ Correct.
-- C: ✓ Correct. Each model family tackles this intractability differently.
-- D: ✗ Images are usually treated as continuous. Densities are well defined.
-- E: ✗ The slides argue the opposite: generative modeling is essential for the next leap in AI and is now offered as a cloud service.
+- A: ✗ Images are usually treated as continuous. Densities are well defined.
+- B: ✓ Correct. Each model family tackles this intractability differently.
+- C: ✗ There is strong demand: content generation, rendering and advertising now run on generative models offered as cloud services.
+- D: ✓ Correct.
+- E: ✓ Correct.
 
-**Q10 → C**
+**Q10 → D**
 
 Accuracy: if p_model is high for a generated observation it should look like it came from p_data, and if low it should not. Generation: it should be easy to sample a new observation. Representation: it should be possible to understand how high-level features are represented by p_model.
 
-- A: ✗ None of these are the listed properties.
-- B: ✗ Determinism contradicts the generative mandate.
-- C: ✓ Correct. High p_model should mean the sample looks real; sampling should be easy; features should be interpretable.
-- D: ✗ These are engineering concerns, not the three properties listed.
+- A: ✗ Determinism contradicts the generative mandate.
+- B: ✗ These are engineering concerns. They say nothing about whether p_model matches p_data.
+- C: ✗ None of these say whether samples look real, are easy to draw, or have interpretable factors.
+- D: ✓ Correct. High p_model should mean the sample looks real; sampling should be easy; features should be interpretable.
 
 **Q11 → A**
 
 Lecture details: start small (e.g., 7B models) in a playground such as SageMaker JumpStart; adapt by fine-tuning and aligning to helpful, honest and harmless values; establish metrics; optimize for inference before deployment on endpoints; then monitor with tools like CloudWatch and CloudTrail.
 
 - A: ✓ Correct. Six stages, starting from a single well-defined use case.
-- B: ✗ The lifecycle explicitly starts from existing foundation models instead of training from scratch.
-- C: ✗ Use-case identification comes first, and evaluation precedes deployment.
+- B: ✗ Use-case identification comes first, and evaluation precedes deployment.
+- C: ✗ The lifecycle explicitly starts from existing foundation models instead of training from scratch.
 - D: ✗ Missing stages, and fine-tuning happens before deployment.
 
-**Q12 → A, B, E**
+**Q12 → B, C, D**
 
 Shared core principles: Traceability, Reliability, Lawfulness, Accountability, Governability, Equity. Military-specific concerns included adversarial AI, human–machine teaming and the arms race. Healthcare concerns included empathy, autonomy and privacy.
 
-- A: ✓ Correct.
+- A: ✗ Profit is a business goal, not an ethical principle.
 - B: ✓ Correct.
-- C: ✗ Autonomy appears as a healthcare concern, not as an unconstrained principle. Governability implies human oversight.
-- D: ✗ Not an ethical principle on the slide.
-- E: ✓ Correct.
+- C: ✓ Correct.
+- D: ✓ Correct.
+- E: ✗ Autonomy appears as a healthcare concern, not as an unconstrained principle. Governability implies human oversight.
 
 **Q13 → A**
 
@@ -286,7 +286,7 @@ Given x(s), the source ODE runs forward to the latent x(l); the target, reverse 
 
 **Q14 → B**
 
-The slides contrast supervised (labeled data, direct feedback, predict outcomes), unsupervised (no labels, no feedback, find structure) and RL (decision process, reward system, learn a series of actions).
+The difference is the training signal. Supervised learning sees the correct answer y for each x. Unsupervised learning sees only x. RL sees a scalar reward that may arrive many steps after the action that earned it, so the agent must learn a policy over sequences of actions (the credit-assignment problem).
 
 - A: ✗ Dimensionality reduction is an unsupervised technique, not the defining feature of RL.
 - B: ✓ Correct. The cycle is observe → act → improve from reward → environment transitions.
@@ -331,7 +331,7 @@ Sample space ≠ support of p_data. The model’s density (the orange box) must 
 
 **Q19 → C**
 
-A density describes relative likelihood for a continuous variable; only integrals over regions are probabilities. The joint wind speed and direction example on the slide is a 2-D density.
+A density describes relative likelihood for a continuous variable; only integrals over regions are probabilities. For example, a N(0, 0.1²) density peaks at about 3.99, yet it is valid because its integral is 1.
 
 - A: ✗ The uniform box density is discontinuous at its edges yet valid.
 - B: ✗ Densities can exceed 1. A narrow Gaussian peaks well above 1.
@@ -340,21 +340,21 @@ A density describes relative likelihood for a continuous variable; only integral
 
 **Q20 → B, C, D**
 
-Clustering is used for market segmentation and image compression. Dimensionality reduction helps visualization, noise reduction and computational efficiency. Prince’s taxonomy places generative, probabilistic and latent-variable models under unsupervised learning.
+Clustering is used for market segmentation and image compression. Dimensionality reduction helps visualization, noise reduction and computational efficiency. Generative models are usually unsupervised because they model p(x), which needs no labels.
 
 - A: ✗ That is supervised, discriminative learning.
 - B: ✓ Correct.
 - C: ✓ Correct.
 - D: ✓ Correct. It sits in the taxonomy under unsupervised learning.
 
-**Q21 → C**
+**Q21 → A**
 
 The shift came as cloud services began offering generative modeling via APIs: automated content generation, visual product rendering and brand-tailored advertising.
 
-- A: ✗ They run on GPUs.
+- A: ✓ Correct.
 - B: ✗ Not a reason given.
-- C: ✓ Correct.
-- D: ✗ Both need data. Generative models are usually unsupervised.
+- C: ✗ Both need data. Generative models are usually unsupervised.
+- D: ✗ They run on GPUs.
 
 
 ---
@@ -375,13 +375,13 @@ The shift came as cloud services began offering generative modeling via APIs: au
 - ○ **C.** 12,810
 - ○ **D.** 14,630
 
-**Q24.** ☐ *Select all that apply.* Which statements about the AlexNet design as described in the lecture are correct? Select all that apply.
+**Q24.** ☐ *Select all that apply.* Which statements about the AlexNet design are correct? Select all that apply.
 
-- ☐ **A.** Every convolutional layer uses sigmoid activations because ReLU had not yet been introduced in 2012
-- ☐ **B.** Max-pooling layers downsample height and width; AlexNet uses 3×3 max-pooling with stride 2
-- ☐ **C.** Convolutional layers change the depth (number of channels) of the data
-- ☐ **D.** The classification head is a single linear layer with no bias
-- ☐ **E.** With ReLU, biases start slightly positive so every layer begins with nonzero output and gradient
+- ☐ **A.** With ReLU, biases start slightly positive so every layer begins with nonzero output and gradient
+- ☐ **B.** Convolutional layers change the depth (number of channels) of the data
+- ☐ **C.** Every convolutional layer uses sigmoid activations because ReLU had not yet been introduced in 2012
+- ☐ **D.** Max-pooling layers downsample height and width; AlexNet uses 3×3 max-pooling with stride 2
+- ☐ **E.** The classification head is a single linear layer with no bias
 
 **Q25.** ○ *Single answer.* A residual (skip) connection computes f(x) = C(x) + x. What does the convolutional path C learn, and why does this help very deep networks?
 
@@ -404,12 +404,12 @@ The shift came as cloud services began offering generative modeling via APIs: au
 - ☐ **C.** Transfer learning typically freezes the pretrained layers and trains only a new head
 - ☐ **D.** Fine-tuning updates weights across the model and needs more data and compute
 
-**Q28.** ○ *Single answer.* When fine-tuning, the learning rate is set too high. What failure mode does the lecture name?
+**Q28.** ○ *Single answer.* When fine-tuning, the learning rate is set too high. What failure mode results?
 
-- ○ **A.** Posterior collapse, where the pretrained layers stop sending any signal to the new classification head
+- ○ **A.** Catastrophic forgetting, which destroys the valuable pretrained knowledge
 - ○ **B.** Exposure bias, where the model has never seen its own predictions as inputs during training
-- ○ **C.** Catastrophic forgetting, which destroys the valuable pretrained knowledge
-- ○ **D.** Mode collapse, where the network maps many different inputs to the same few outputs
+- ○ **C.** Mode collapse, where the network maps many different inputs to the same few outputs
+- ○ **D.** Posterior collapse, where the pretrained layers stop sending any signal to the new classification head
 
 **Q29.** ○ *Single answer.* On CIFAR-10, the vanilla dense network reached 50.89% test accuracy and the CNN about 70%. What is the main reason for the gap?
 
@@ -433,12 +433,12 @@ The shift came as cloud services began offering generative modeling via APIs: au
 - ○ **C.** The point in training at which the learning rate is halved, which stabilizes the two players
 - ○ **D.** A point that is a global minimum of a single shared loss function
 
-**Q32.** ○ *Single answer.* Why are GPUs preferred to CPUs for deep learning, according to the lecture?
+**Q32.** ○ *Single answer.* Why are GPUs preferred to CPUs for deep learning?
 
-- ○ **A.** GPUs have no caches, which removes memory latency
-- ○ **B.** GPUs are optimized for low-latency serial execution of complex branching code
-- ○ **C.** GPUs run at higher clock speeds than any CPU, so each individual operation finishes sooner
-- ○ **D.** They maximize throughput on parallel arithmetic such as matrix multiplies
+- ○ **A.** GPUs run at higher clock speeds than any CPU, so each individual operation finishes sooner
+- ○ **B.** They maximize throughput on parallel arithmetic such as matrix multiplies
+- ○ **C.** GPUs are optimized for low-latency serial execution of complex branching code
+- ○ **D.** GPUs have no caches, which removes memory latency
 
 **Q33.** ○ *Single answer.* The F1 score is defined as
 
@@ -447,12 +447,12 @@ The shift came as cloud services began offering generative modeling via APIs: au
 - ○ **C.** recall divided by precision, so that it equals 1 when the two are balanced
 - ○ **D.** the fraction of all predictions that are correct across every class, regardless of class imbalance
 
-**Q34.** ○ *Single answer.* How does the relationship between NLP and vision as described in the lecture differ between the past and today?
+**Q34.** ○ *Single answer.* How has the flow of ideas between NLP and computer vision changed over time?
 
-- ○ **A.** NLP has always led vision, since CNNs were invented for text
-- ○ **B.** NLP once borrowed from vision; today vision borrows from NLP (attention, ViT)
-- ○ **C.** Vision abandoned transfer learning, while NLP adopted it from computer vision only after the arrival of large language models
-- ○ **D.** Vision and NLP have always developed independently
+- ○ **A.** Vision abandoned transfer learning, while NLP adopted it from computer vision only after the arrival of large language models
+- ○ **B.** NLP has always led vision, since CNNs were invented for text
+- ○ **C.** Vision and NLP have always developed independently
+- ○ **D.** NLP once borrowed from vision; today vision borrows from NLP (attention, ViT)
 
 **Q35.** ☐ *Select all that apply.* Which statements about pooling layers are correct? Select all that apply.
 
@@ -475,12 +475,12 @@ The shift came as cloud services began offering generative modeling via APIs: au
 - ○ **C.** Zero-pads the input so the output keeps the same height and width
 - ○ **D.** Copies the edge pixels outward so that the convolution can see a mirror image of the border
 
-**Q38.** ☐ *Select all that apply.* Why are pretrained vision models needed, according to the lecture? Select all that apply.
+**Q38.** ☐ *Select all that apply.* Why are pretrained vision models needed? Select all that apply.
 
-- ☐ **A.** Pretrained models are guaranteed to specialize perfectly to any target domain without further adaptation
-- ☐ **B.** Training such large models from scratch on a small dataset is not feasible
-- ☐ **C.** They encode visual features learned from huge datasets like ImageNet
-- ☐ **D.** Architectures like ResNet, Xception and MobileNet have millions of parameters
+- ☐ **A.** Architectures like ResNet, Xception and MobileNet have millions of parameters
+- ☐ **B.** They encode visual features learned from huge datasets like ImageNet
+- ☐ **C.** Pretrained models are guaranteed to specialize perfectly to any target domain without further adaptation
+- ☐ **D.** Training such large models from scratch on a small dataset is not feasible
 
 **Q39.** ○ *Single answer.* In the transfer-learning workflow, which step comes right after removing the pretrained model’s prediction head?
 
@@ -489,11 +489,11 @@ The shift came as cloud services began offering generative modeling via APIs: au
 - ○ **C.** Retrain the entire network from random initialization so that ImageNet-specific features are removed
 - ○ **D.** Freeze all weights including the new head
 
-**Q40.** ○ *Single answer.* In Foster’s feature hierarchy (units A → D), what does a unit C typically represent?
+**Q40.** ○ *Single answer.* In a deep CNN’s feature hierarchy (input → low-level → mid-level → high-level units), what does a mid-level unit typically represent?
 
-- ○ **A.** Simple edges and textures
+- ○ **A.** The abstract concept “smiling”, which summarizes the whole face into a single high-level label
 - ○ **B.** Mid-level parts such as eyes or teeth
-- ○ **C.** The abstract concept “smiling”, which summarizes the whole face into a single high-level label
+- ○ **C.** Simple edges and textures
 - ○ **D.** Raw pixel values for a single color channel
 
 **Q41.** ○ *Single answer.* DenseNet uses 1×1 convolutions in its transition blocks. What do they do?
@@ -524,15 +524,15 @@ Conv1: (4·4·3 + 1)·10 = 490. Conv2: (3·3·10 + 1)·20 = 1,820. Flatten: 0. D
 - C: ✗ That is only the dense layer.
 - D: ✗ This omits the 490 parameters of the first convolution.
 
-**Q24 → B, C, E**
+**Q24 → A, B, D**
 
 AlexNet: conv layers change depth, max-pool layers downsample spatially, ReLU everywhere, additive biases in all conv and FC layers, and a three-FC-layer classification head.
 
-- A: ✗ AlexNet popularized ReLU; every conv layer is ReLU-activated.
-- B: ✓ Correct. These are overlapping pooling windows.
-- C: ✓ Correct.
-- D: ✗ The head flattens the final feature map and feeds it through three fully connected layers, all with additive bias.
-- E: ✓ Correct. This avoids dead units at initialization.
+- A: ✓ Correct. This avoids dead units at initialization.
+- B: ✓ Correct.
+- C: ✗ AlexNet popularized ReLU; every conv layer is ReLU-activated.
+- D: ✓ Correct. These are overlapping pooling windows.
+- E: ✗ The head flattens the final feature map and feeds it through three fully connected layers, all with additive bias.
 
 **Q25 → A**
 
@@ -556,25 +556,25 @@ MobileNetV2 repeats inverted residual bottlenecks: expand → depthwise conv →
 
 Workflow: load a pretrained model, remove the prediction head, add a small custom head, freeze the feature extractor, and train only the new layers. Fine-tuning goes further, adapting pretrained weights by backpropagation for higher task performance.
 
-- A: ✓ Correct. The slide states this relationship explicitly.
+- A: ✓ Correct. Both reuse pretrained weights. Fine-tuning simply unfreezes more of them.
 - B: ✗ Backwards: transfer learning needs the least data since most weights are frozen.
 - C: ✓ Correct.
 - D: ✓ Correct.
 
-**Q28 → C**
+**Q28 → A**
 
-Remedies listed: (1) LR ramp-up from a low initial value; (2) differential learning rates per layer; (3) low LR for early (generic) layers and higher LR for later (task-specific) layers.
+Why it happens: the pretrained weights sit in a good basin. A large step on a small new dataset moves them far from it, and the generic features are overwritten by ones that fit only the new data. Remedies: (1) warm up the LR from a small value; (2) use per-layer LRs; (3) give early, generic layers a smaller LR than later, task-specific ones. The Keras example below uses a 100× smaller LR after unfreezing.
 
-- A: ✗ A VAE failure mode in which the decoder ignores the latent.
+- A: ✓ Correct. A too-low LR causes the opposite problem: very slow convergence.
 - B: ✗ An autoregressive sequence-model issue, unrelated to fine-tuning learning rates.
-- C: ✓ Correct. A too-low LR causes the opposite problem: very slow convergence.
-- D: ✗ A GAN failure mode.
+- C: ✗ A GAN failure mode.
+- D: ✗ A VAE failure mode in which the decoder ignores the latent.
 
 **Q29 → D**
 
-CIFAR-10 has 60,000 32×32 RGB images in 10 mutually exclusive classes (6,000 per class). Random guessing gives 10%. CNN filters detect edges, then parts, then concepts, as in Foster’s units A → D.
+CIFAR-10 has 60,000 32×32 RGB images in 10 mutually exclusive classes (6,000 per class). Random guessing gives 10%. CNN filters detect edges, then parts, then concepts. The code below runs a hand-written edge filter so you can see what a single filter computes.
 
-- A: ✗ CNNs usually have far fewer parameters (15,120 in the lecture example).
+- A: ✗ CNNs usually have far fewer parameters, because each filter is reused at every position (see the parameter count in the code).
 - B: ✗ The class count does not favor any architecture.
 - C: ✗ They can.
 - D: ✓ Correct. The inductive biases of locality and translation equivariance fit images.
@@ -591,21 +591,21 @@ GLO: pair each image with a random vector, train a generator to reconstruct the 
 
 **Q31 → A**
 
-GAN optimization is min_G max_D V(D, G). It is sensitive to initialization, architecture and hyper-parameters, and the slides call stabilizing it “more art than science.” When the discriminator becomes too accurate, generator gradients vanish (Arjovsky & Bottou, 2017).
+GAN optimization is min_G max_D V(D, G). It is sensitive to initialization, architecture and hyper-parameters, because the two players chase a moving target and gradient descent can cycle instead of converging. When the discriminator becomes too accurate, generator gradients vanish (Arjovsky & Bottou, 2017).
 
 - A: ✓ Correct. The generator and discriminator compete.
 - B: ✗ That is a strict local minimum, not a saddle.
 - C: ✗ Unrelated.
 - D: ✗ GANs have two players with opposing objectives, not one shared minimum.
 
-**Q32 → D**
+**Q32 → B**
 
 CPU: few powerful cores, low latency, serial. GPU: thousands of ALUs, high throughput, parallel. Training is dominated by matrix multiplies, which are embarrassingly parallel.
 
-- A: ✗ The slide notes GPU caches convert long-latency memory accesses into short-latency ones.
-- B: ✗ That describes CPUs.
-- C: ✗ Clock speed is not the main advantage. Massive parallelism is.
-- D: ✓ Correct.
+- A: ✗ Clock speed is not the main advantage. Massive parallelism is.
+- B: ✓ Correct.
+- C: ✗ That describes CPUs.
+- D: ✗ GPUs do have caches, which turn long-latency memory accesses into short ones.
 
 **Q33 → B**
 
@@ -616,14 +616,14 @@ Precision is the accuracy of positive predictions for a class. Recall is the fra
 - C: ✗ Not a standard metric.
 - D: ✗ That is accuracy.
 
-**Q34 → B**
+**Q34 → D**
 
 Progression: vision moved from CNNs to foundation vision models to transfer learning; NLP moved from RNNs to Transformers to LLMs to transfer learning. Attention now appears in vision (ViT), and joint models like VisualBERT combine both.
 
-- A: ✗ CNNs came from vision.
-- B: ✓ Correct.
-- C: ✗ Both fields use transfer learning: CNN → foundation vision models, RNN → Transformers → LLMs.
-- D: ✗ The lecture stresses convergence.
+- A: ✗ Both fields use transfer learning: CNN → foundation vision models, RNN → Transformers → LLMs.
+- B: ✗ CNNs came from vision.
+- C: ✗ The two fields have converged on the same architectures.
+- D: ✓ Correct.
 
 **Q35 → B, C, D**
 
@@ -652,14 +652,14 @@ With stride 2 and padding='same', the output size is ceil(input/2), which is why
 - C: ✓ Correct.
 - D: ✗ Keras uses zero padding, not reflection.
 
-**Q38 → B, C, D**
+**Q38 → A, B, D**
 
 Benefits: rich visual knowledge, avoiding overfitting on small data, high performance from little data. Trade-off: limited domain specialization, which fine-tuning addresses. The COVID-19 chest X-ray paper is the real-world example given.
 
-- A: ✗ Limited specialization to the target domain is listed as a trade-off.
-- B: ✓ Correct, as it would overfit and be too costly.
-- C: ✓ Correct.
-- D: ✓ Correct.
+- A: ✓ Correct.
+- B: ✓ Correct.
+- C: ✗ Pretrained features come from a different domain, so specialization is limited. That is the reason to fine-tune.
+- D: ✓ Correct, as it would overfit and be too costly.
 
 **Q39 → A**
 
@@ -674,9 +674,9 @@ Steps: load model → remove head → add custom layers → freeze feature-extra
 
 A: input pixels → B: low-level edges → C: mid-level parts → D: high-level concepts. Features are learned from data, not hand-coded.
 
-- A: ✗ That is unit B.
+- A: ✗ That is unit D.
 - B: ✓ Correct.
-- C: ✗ That is unit D.
+- C: ✗ That is unit B.
 - D: ✗ That is unit A.
 
 **Q41 → B**
@@ -897,7 +897,7 @@ Because the encoder is frozen and the classifier is linear, accuracy reflects ho
 
 **Q51 → B**
 
-The lecture: wider and deeper encoders improve representation quality, and contrastive learning benefits even more from them than supervised learning does.
+A plausible reason: the contrastive task (pick 1 positive among 2N−2 negatives under heavy augmentation) is harder and less saturated than a 1,000-way label, so extra capacity keeps paying off.
 
 - A: ✗ Depth also helps.
 - B: ✓ Correct (Figure 7).
@@ -942,7 +942,7 @@ The gradient analysis shows cross-entropy with ℓ2 normalization and temperatur
 
 **Q56 → D**
 
-The lecture: representations transfer strongly and match or exceed supervised pretraining on many datasets.
+Representations that are invariant to augmentation, rather than tuned to 1,000 ImageNet labels, carry over well to new label sets.
 
 - A: ✗ Fine-tuning was evaluated.
 - B: ✗ Too strong a claim.
@@ -993,12 +993,12 @@ The default projection head is a 2-layer MLP mapping the 2048-d h to a 128-d z. 
 - ☐ **D.** It is tight when q(z|x, θ) equals the true posterior Pr(z|x, φ)
 - ☐ **E.** It can be written as reconstruction term − KL(q(z|x,θ) ‖ Pr(z))
 
-**Q62.** ☐ *Select all that apply.* Which statements about KL divergence, as presented in the lecture, are correct? Select all that apply.
+**Q62.** ☐ *Select all that apply.* Which statements about KL divergence are correct? Select all that apply.
 
-- ☐ **A.** It is symmetric, KL(p ‖ q) = KL(q ‖ p), so it is a true distance metric satisfying the triangle inequality
+- ☐ **A.** It is always ≥ 0, and equals 0 only when the two distributions are identical
 - ☐ **B.** KL(p ‖ q) explodes to infinity if p assigns positive probability where q assigns zero
 - ☐ **C.** It measures the information lost when q is used to approximate p
-- ☐ **D.** It is always ≥ 0, and equals 0 only when the two distributions are identical
+- ☐ **D.** It is symmetric, KL(p ‖ q) = KL(q ‖ p), so it is a true distance metric satisfying the triangle inequality
 
 **Q63.** ○ *Single answer.* The VAE encoder outputs z_mean and z_log_var. What is the closed-form KL term to N(0, I) used in the implementation?
 
@@ -1021,12 +1021,12 @@ The default projection head is a 2-layer MLP mapping the 2048-d h to a 128-d z. 
 - ○ **C.** It forces the encoder to output a full covariance matrix, capturing correlations between latent dimensions
 - ○ **D.** It replaces the KL term in the loss
 
-**Q66.** ☐ *Select all that apply.* The plain autoencoder trained on Fashion-MNIST with a 2-D latent space produced a problematic embedding. Which observations did the lecture list? Select all that apply.
+**Q66.** ☐ *Select all that apply.* The plain autoencoder trained on Fashion-MNIST with a 2-D latent space produced a problematic embedding. Which of the following are typical problems with such an embedding? Select all that apply.
 
-- ☐ **A.** There are large gaps between clusters containing few points
-- ☐ **B.** The distribution is not symmetric about (0, 0); many points have large positive y-values
-- ☐ **C.** Points decoded from anywhere in the bounding box are guaranteed to look like realistic, well-formed clothing items
-- ☐ **D.** Some clothing items occupy a very small area and others a much larger one
+- ☐ **A.** The distribution is not symmetric about (0, 0); many points have large positive y-values
+- ☐ **B.** Points decoded from anywhere in the bounding box are guaranteed to look like realistic, well-formed clothing items
+- ☐ **C.** Some clothing items occupy a very small area and others a much larger one
+- ☐ **D.** There are large gaps between clusters containing few points
 
 **Q67.** ○ *Single answer.* How does the VAE’s encoder differ from a plain autoencoder’s encoder?
 
@@ -1035,13 +1035,13 @@ The default projection head is a 2-layer MLP mapping the 2048-d h to a 128-d z. 
 - ○ **C.** The AE maps each image to one point; the VAE maps it to a normal distribution around a point
 - ○ **D.** The VAE encoder uses transposed convolutions
 
-**Q68.** ☐ *Select all that apply.* Which effects of the KL loss term on the latent space are described in the lecture? Select all that apply.
+**Q68.** ☐ *Select all that apply.* Which effects does the KL loss term have on the latent space? Select all that apply.
 
-- ☐ **A.** It reduces the chance of large gaps forming between point clusters
-- ☐ **B.** It provides a well-defined distribution, N(0, I), from which to choose latent points for generation
-- ☐ **C.** It forces each clothing class into its own separate region, since the KL term acts as a supervised class-separation loss
-- ☐ **D.** It guarantees perfect pixel-level reconstructions
-- ☐ **E.** It encourages the encoder to use the space around the origin symmetrically and efficiently
+- ☐ **A.** It forces each clothing class into its own separate region, since the KL term acts as a supervised class-separation loss
+- ☐ **B.** It guarantees perfect pixel-level reconstructions
+- ☐ **C.** It encourages the encoder to use the space around the origin symmetrically and efficiently
+- ☐ **D.** It provides a well-defined distribution, N(0, I), from which to choose latent points for generation
+- ☐ **E.** It reduces the chance of large gaps forming between point clusters
 
 **Q69.** ○ *Single answer.* For the CelebA VAE, what changes were made compared to the Fashion-MNIST model?
 
@@ -1085,12 +1085,12 @@ The default projection head is a 2-layer MLP mapping the 2048-d h to a 128-d z. 
 - ○ **C.** 4×4×128 → 2,048 features; Dense(2) has 2,048·2 + 2 = 4,098 parameters
 - ○ **D.** 8×8×128 → 8,192 features; Dense(2) has 16,386 parameters
 
-**Q75.** ○ *Single answer.* Which loss did the lecture’s Keras autoencoder use, and why?
+**Q75.** ○ *Single answer.* A Keras autoencoder reconstructs Fashion-MNIST pixels scaled to [0, 1] through a sigmoid output. Which loss fits, and why?
 
-- ○ **A.** Binary cross-entropy, appropriate for pixel values scaled to [0, 1] with a sigmoid output
-- ○ **B.** Categorical cross-entropy over the 10 clothing classes
-- ○ **C.** Mean absolute error between the 2-D latent vectors of each image and its augmented copy, as in contrastive learning
-- ○ **D.** Hinge loss, because the decoder outputs signed margins rather than pixel intensities
+- ○ **A.** Mean absolute error between the 2-D latent vectors of each image and its augmented copy, as in contrastive learning
+- ○ **B.** Hinge loss, because the decoder outputs signed margins rather than pixel intensities
+- ○ **C.** Binary cross-entropy, appropriate for pixel values scaled to [0, 1] with a sigmoid output
+- ○ **D.** Categorical cross-entropy over the 10 clothing classes
 
 **Q76.** ☐ *Select all that apply.* ECMVAE (Explicit Conditional Multimodal VAE) for audio-visual segmentation. Which statements are correct? Select all that apply.
 
@@ -1142,12 +1142,12 @@ The default projection head is a 2-layer MLP mapping the 2048-d h to a 128-d z. 
 - ○ **C.** Its latent space is not forced to be continuous, so random points often decode poorly
 - ○ **D.** Its decoder cannot accept inputs outside the training set
 
-**Q83.** ○ *Single answer.* In the “infinite wardrobe” analogy, what does the VAE change compared with the plain autoencoder?
+**Q83.** ○ *Single answer.* What does the VAE change about how each input is placed in the latent space, compared with a plain autoencoder?
 
-- ○ **A.** Items are sorted alphabetically
-- ○ **B.** Each item gets a general area, kept near the center and limited in size
-- ○ **C.** Each item is placed at one exact location, as before
-- ○ **D.** The stylist is replaced by a second wardrobe so that every outfit is stored twice on opposite sides
+- ○ **A.** Each input is mapped to one exact point, as before
+- ○ **B.** Each input gets a Gaussian region, pulled toward the origin by the KL term
+- ○ **C.** Inputs are sorted by class label
+- ○ **D.** The decoder is replaced by a second encoder so that every input is stored twice, once on each side of the origin
 
 
 ### Answer key — Class 3 · Autoencoders & VAEs
@@ -1163,7 +1163,7 @@ Latent variable models define a joint Pr(x, z) = Pr(x|z)Pr(z): a likelihood time
 
 **Q59 → B, C, E**
 
-The slides’ example: “Gaussian 1 gets 70% weight, Gaussian 2 gets 20%, Gaussian 3 gets 10%.” Complexity grows with more components. The nonlinear latent variable model generalizes this to a continuous z and an infinite mixture.
+With weights (0.7, 0.2, 0.1), the code below samples z, then x, and checks the histogram against Σ λ_n N(x; μ_n, σ_n²). Complexity grows with more components. The nonlinear latent variable model generalizes this to a continuous z and an infinite mixture.
 
 - A: ✗ λ_n are probabilities: non-negative and summing to 1.
 - B: ✓ Correct.
@@ -1190,14 +1190,14 @@ Optimization moves both between colored curves (improving θ tightens the bound)
 - D: ✓ Correct. The gap is KL(q ‖ posterior).
 - E: ✓ Correct. This is the reconstruction-minus-distance-to-prior view.
 
-**Q62 → B, C, D**
+**Q62 → A, B, C**
 
 KL(p ‖ q) = Σ p(x) log[p(x)/q(x)]. The zero-probability issue causes undefined or extreme gradients and can push q toward degenerate predictions. In the VAE, KL(q(z|x) ‖ N(0, I)) regularizes the latent space.
 
-- A: ✗ KL is asymmetric and violates the triangle inequality, so it is a divergence, not a metric.
-- B: ✓ Correct. This is the “infinity trap” on the slide.
+- A: ✓ Correct.
+- B: ✓ Correct. KL(p‖q) contains the term p(x)·log(p(x)/0) = ∞.
 - C: ✓ Correct.
-- D: ✓ Correct.
+- D: ✗ KL is asymmetric and violates the triangle inequality, so it is a divergence, not a metric.
 
 **Q63 → B**
 
@@ -1226,14 +1226,14 @@ Sampling z ~ q(z|x) directly is non-differentiable with respect to the encoder p
 - C: ✗ The VAE encoder uses a diagonal covariance.
 - D: ✗ Both the reconstruction and KL terms remain.
 
-**Q66 → A, B, D**
+**Q66 → A, C, D**
 
 Because nothing forces the latent space to be continuous, nearby points (e.g., (−2, 2) and (−2.1, 2.1)) need not decode to similar images, and sampling uniformly between min and max embeddings gives poor results. The VAE fixes this with neighborhood sampling plus the KL term.
 
-- A: ✓ Correct (sparse gaps).
-- B: ✓ Correct (asymmetry).
-- C: ✗ The opposite: gaps mean random samples often decode to poorly formed images.
-- D: ✓ Correct (variable density).
+- A: ✓ Correct (asymmetry).
+- B: ✗ The opposite: gaps mean random samples often decode to poorly formed images.
+- C: ✓ Correct (variable density).
+- D: ✓ Correct (sparse gaps).
 
 **Q67 → C**
 
@@ -1244,14 +1244,14 @@ Sampling around z_mean forces the decoder to produce similar images for nearby l
 - C: ✓ Correct.
 - D: ✗ Transposed convolutions are in the decoder of both models.
 
-**Q68 → A, B, E**
+**Q68 → C, D, E**
 
 Loss = reconstruction loss + β · KL. The reconstruction term rewards fidelity, while the KL term regularizes toward the standard normal, giving a continuous, centered, gap-free latent space.
 
-- A: ✓ Correct.
-- B: ✓ Correct.
-- C: ✗ Labels are never used. The VAE latent visualization shows each category roughly equally represented, with no preferential treatment.
-- D: ✗ The KL term trades off against reconstruction and generally makes reconstructions blurrier.
+- A: ✗ Labels are never used. The VAE latent visualization shows each category roughly equally represented, with no preferential treatment.
+- B: ✗ The KL term trades off against reconstruction and generally makes reconstructions blurrier.
+- C: ✓ Correct.
+- D: ✓ Correct.
 - E: ✓ Correct.
 
 **Q69 → B**
@@ -1308,14 +1308,14 @@ With padding 'same' and stride 2, each conv halves height and width. Flatten has
 - C: ✓ Correct. 32 → 16 → 8 → 4 spatially, with 128 channels.
 - D: ✗ There are three stride-2 halvings: 32 → 16 → 8 → 4, not 8.
 
-**Q75 → A**
+**Q75 → C**
 
 autoencoder.compile(optimizer='adam', loss='binary_crossentropy'); fit(x_train, x_train, epochs=5, batch_size=100). The target equals the input because the network learns to reconstruct.
 
-- A: ✓ Correct.
-- B: ✗ The autoencoder reconstructs pixels and never uses the class labels.
-- C: ✗ There is no augmentation or latent comparison. The model is trained with x_train as both input and target.
-- D: ✗ Hinge loss is for margin classifiers.
+- A: ✗ There is no augmentation or latent comparison. The model is trained with x_train as both input and target.
+- B: ✗ Hinge loss is for margin classifiers.
+- C: ✓ Correct.
+- D: ✗ The autoencoder reconstructs pixels and never uses the class labels.
 
 **Q76 → A, C, D, E**
 
@@ -1385,10 +1385,10 @@ There is no requirement for the latent space to be continuous, and it is uneven 
 
 Encoding to areas gives more diversity and avoids discontinuities. The constraints are the KL term: center the areas, limit their size, and penalize deviation.
 
-- A: ✗ Not part of the analogy.
+- A: ✗ That is the plain autoencoder.
 - B: ✓ Correct.
-- C: ✗ That is the plain autoencoder.
-- D: ✗ Not part of the analogy.
+- C: ✗ No such mechanism exists in a VAE.
+- D: ✗ No such mechanism exists in a VAE.
 
 
 ---
@@ -1633,7 +1633,7 @@ Cross-attention is regular dot-product attention across two sequences. Each deco
 
 **Q90 → B, C, D**
 
-The lecture adds that “reality is a bit blurry”: GPT-style models can be prompted to translate, and BERT can be applied to summarization. The lecture also notes that a decoder-only model uses roughly half the parameters of a comparable encoder–decoder.
+The distinction comes from the attention mask. No mask gives bidirectional context (encoder). A causal mask gives left-to-right context (decoder). Cross-attention connects the two. The lines blur in practice: GPT-style models can be prompted to translate, and BERT can be applied to summarization. A decoder-only model drops the encoder stack, roughly halving the parameters of a comparable encoder–decoder.
 
 - A: ✗ Encoder-only models use unmasked (bidirectional) attention.
 - B: ✓ Correct.
@@ -1661,7 +1661,7 @@ Raffel et al. (2020): a unified text-to-text format means one model, one loss, a
 
 **Q93 → A, B, D**
 
-Layer norm (Ba et al., 2016) standardizes sub-layer inputs, stabilizes hidden-state dynamics, regulates scale, and speeds convergence. In the pre-LN arrangement described in the lecture (and in ViT), it is applied before multi-head attention and the feed-forward network, with residual connections around each.
+Layer norm (Ba et al., 2016) standardizes sub-layer inputs, stabilizes hidden-state dynamics, regulates scale, and speeds convergence. In the pre-LN arrangement (used in ViT and GPT-2), it is applied before multi-head attention and the feed-forward network, with residual connections around each.
 
 - A: ✓ Correct.
 - B: ✓ Correct. It does not depend on other samples in the batch.
@@ -1874,12 +1874,12 @@ The four criteria: effectiveness, generalization, specificity and fluency.
 - ○ **C.** After a Type A first layer, the center feature already depends only on earlier pixels
 - ○ **D.** Because the center pixel is always zero after the first layer’s ReLU, so including it adds nothing
 
-**Q118.** ○ *Single answer.* Using the sentence “I went to the bank to withdraw money,” what does the lecture say a self-attention head linking “bank” and “withdraw” achieves?
+**Q118.** ○ *Single answer.* Using the sentence “I went to the bank to withdraw money,” what can a self-attention head linking “bank” and “withdraw” achieve?
 
-- ○ **A.** It establishes subject–verb agreement between “I” and “went”
+- ○ **A.** It encodes the absolute position of “bank”
 - ○ **B.** It predicts the next token after “money” by attending only to the final word
 - ○ **C.** It disambiguates “bank” as a financial institution
-- ○ **D.** It encodes the absolute position of “bank”
+- ○ **D.** It establishes subject–verb agreement between “I” and “went”
 
 **Q119.** ○ *Single answer.* In an LSTM, which component carries information across long time spans through a linear self-loop?
 
@@ -1888,12 +1888,12 @@ The four criteria: effectiveness, generalization, specificity and fluency.
 - ○ **C.** The softmax output layer, which keeps a running average of past predictions over time
 - ○ **D.** The input feature unit, which uses a ReLU so that its activations never saturate across long time spans
 
-**Q120.** ○ *Single answer.* Why is encoding an entire past sequence into one RNN hidden vector problematic, according to the lecture?
+**Q120.** ○ *Single answer.* Why is encoding an entire past sequence into one RNN hidden vector problematic?
 
 - ○ **A.** The hidden vector cannot be updated after the first time step
-- ○ **B.** The hidden vector grows linearly with the sequence length, which quickly exhausts the available GPU memory
-- ○ **C.** RNNs cannot process text
-- ○ **D.** A single vector is an inefficient bottleneck, and most of its context is irrelevant to the next step
+- ○ **B.** A single vector is an inefficient bottleneck, and most of its context is irrelevant to the next step
+- ○ **C.** The hidden vector grows linearly with the sequence length, which quickly exhausts the available GPU memory
+- ○ **D.** RNNs cannot process text
 
 **Q121.** ○ *Single answer.* A sequence-to-sequence RNN with attention translates “A B C D” into “X Y Z <eos>”. What does the <eos> token do?
 
@@ -1916,13 +1916,13 @@ The four criteria: effectiveness, generalization, specificity and fluency.
 - ○ **C.** the state is fully replaced by the new candidate
 - ○ **D.** the output is zero
 
-**Q124.** ☐ *Select all that apply.* Which are listed applications of LSTMs? Select all that apply.
+**Q124.** ☐ *Select all that apply.* Which are typical applications of LSTMs? Select all that apply.
 
-- ☐ **A.** Text generation
-- ☐ **B.** Computing exact image likelihoods by modeling pixels with masked convolutions in raster order
+- ☐ **A.** Time-series forecasting
+- ☐ **B.** Audio classification
 - ☐ **C.** Sentiment analysis
-- ☐ **D.** Time-series forecasting
-- ☐ **E.** Audio classification
+- ☐ **D.** Computing exact image likelihoods by modeling pixels with masked convolutions in raster order
+- ☐ **E.** Text generation
 
 **Q125.** ○ *Single answer.* In ViT, how are learned positional embeddings handled?
 
@@ -1948,7 +1948,7 @@ Autoregressive models turn generation into a sequential process conditioned on p
 Design criteria: positions must be distinct; magnitudes must be controlled; and the method should balance mixing information against computational complexity. Example: “Engineer” −0.9748 + position 0.1566 = −0.8182 under the additive scheme.
 
 - A: ✓ Correct.
-- B: ✗ The lecture warns that a high-magnitude position vector destroys the semantic meaning of tokens.
+- B: ✗ If ‖position vector‖ ≫ ‖token vector‖, the sum is dominated by position, and two different words at the same position look alike to QKᵀ.
 - C: ✓ Correct.
 - D: ✓ Correct.
 
@@ -2019,12 +2019,12 @@ Information about pixel i itself enters only through the input. The Type A mask 
 
 **Q118 → C**
 
-Multi-head analysis from the lecture: head 1 links I–went (actor); head 2 went–to the bank (destination); head 3 bank–withdraw (purpose); head 4 withdraw–money (action–object); head 5 bank–withdraw for contextual meaning. Different heads capture different relations at the same time.
+The mechanism: the query for “bank” scores high against the key for “withdraw”, so the value of “withdraw” is mixed into bank’s new representation, moving it toward the finance sense. Other heads can capture other relations, e.g., head 1 links I–went (actor); head 2 went–to the bank (destination); head 3 bank–withdraw (purpose); head 4 withdraw–money (action–object); head 5 bank–withdraw for contextual meaning. Different heads capture different relations at the same time.
 
-- A: ✗ That is a different head’s pattern.
+- A: ✗ Positional encodings do that.
 - B: ✗ That is not described.
 - C: ✓ Correct.
-- D: ✗ Positional encodings do that.
+- D: ✗ That is a different head’s pattern.
 
 **Q119 → A**
 
@@ -2035,14 +2035,14 @@ s_t = f_t ⊙ s_{t−1} + g_t ⊙ (input feature). Because this update is additi
 - C: ✗ Not part of the recurrence.
 - D: ✗ The input unit computes candidate content. It does not carry memory across time.
 
-**Q120 → D**
+**Q120 → B**
 
-The analogy: keeping every previous physical state in working memory instead of the key features. Attention instead retrieves only the relevant context on demand.
+A fixed-size vector has fixed capacity, so as the sequence grows, old information must be overwritten. Gradients to early steps also vanish (see the BPTT code). Attention keeps every past state and retrieves only the relevant ones on demand.
 
 - A: ✗ It is updated at every step.
-- B: ✗ The hidden vector has a fixed size. That fixed size is the problem.
-- C: ✗ They can. LSTMs are used for text generation and sentiment analysis.
-- D: ✓ Correct.
+- B: ✓ Correct.
+- C: ✗ The hidden vector has a fixed size. That fixed size is the problem.
+- D: ✗ They can. LSTMs are used for text generation and sentiment analysis.
 
 **Q121 → B**
 
@@ -2071,14 +2071,14 @@ h_t = u ⊙ h_{t−1} + (1 − u) ⊙ candidate. Update gates can copy dimension
 - C: ✗ In Goodfellow’s notation, u near 1 keeps the old state.
 - D: ✗ Not what the gate does.
 
-**Q124 → A, C, D, E**
+**Q124 → A, B, C, E**
 
 Advantages: learning long-term dependencies, robustness to vanishing gradients, a flexible architecture, and wide framework support (Keras LSTM and GRU layers).
 
 - A: ✓ Correct.
-- B: ✗ That describes PixelCNN.
+- B: ✓ Correct.
 - C: ✓ Correct.
-- D: ✓ Correct.
+- D: ✗ That describes PixelCNN.
 - E: ✓ Correct.
 
 **Q125 → D**
@@ -2151,11 +2151,11 @@ Class 5 uses ViT as the example of learned positional embeddings: initialized as
 - ○ **C.** It embeds class names or descriptions with the text encoder and picks the class most similar to the image
 - ○ **D.** It retrains the image encoder on the new classes, freezing the text encoder so that the label space stays fixed
 
-**Q134.** ☐ *Select all that apply.* Which limitations and risks of CLIP did the lecture highlight? Select all that apply.
+**Q134.** ☐ *Select all that apply.* Which are known limitations and risks of CLIP? Select all that apply.
 
-- ☐ **A.** Web-scraped training data can contain and amplify social biases
-- ☐ **B.** It cannot recognize text in images at all, failing even on MNIST digits and rendered sentiment text
-- ☐ **C.** It struggles with specialized tasks such as lymph-node tumor detection (PatchCamelyon)
+- ☐ **A.** It cannot recognize text in images at all, failing even on MNIST digits and rendered sentiment text
+- ☐ **B.** It struggles with specialized tasks such as lymph-node tumor detection (PatchCamelyon)
+- ☐ **C.** Web-scraped training data can contain and amplify social biases
 - ☐ **D.** Flexible zero-shot classifiers could be misused, e.g., for unauthorized surveillance
 
 **Q135.** ○ *Single answer.* DALL·E 2 consists of three parts. What is the role of the prior?
@@ -2202,12 +2202,12 @@ Class 5 uses ViT as the example of learned positional embeddings: initialized as
 - ○ **C.** So the model starts out exactly like the frozen LM, for stable training
 - ○ **D.** To speed up inference by skipping the vision encoder at test time
 
-**Q141.** ☐ *Select all that apply.* Which limitations of Flamingo did the lecture list? Select all that apply.
+**Q141.** ☐ *Select all that apply.* Which are known limitations of Flamingo? Select all that apply.
 
-- ☐ **A.** Its classification performance trails contrastive models optimized for image–text retrieval
-- ☐ **B.** In-context learning is sensitive to demonstration quality and scales poorly beyond the low-data regime
-- ☐ **C.** It inherits weaknesses of the pretrained LM, such as hallucinations and ungrounded guesses
-- ☐ **D.** It cannot process video at all, because the Perceiver Resampler only accepts a single still image per sequence
+- ☐ **A.** In-context learning is sensitive to demonstration quality and scales poorly beyond the low-data regime
+- ☐ **B.** It inherits weaknesses of the pretrained LM, such as hallucinations and ungrounded guesses
+- ☐ **C.** It cannot process video at all, because the Perceiver Resampler only accepts a single still image per sequence
+- ☐ **D.** Its classification performance trails contrastive models optimized for image–text retrieval
 
 **Q142.** ○ *Single answer.* A multimodal embedding model such as CLIP is valuable mainly because it
 
@@ -2223,11 +2223,11 @@ Class 5 uses ViT as the example of learned positional embeddings: initialized as
 - ○ **C.** It increases the number of visual tokens for higher fidelity
 - ○ **D.** It turns any number of visual features into 64 tokens, cutting cross-attention cost
 
-**Q144.** ○ *Single answer.* How does Flamingo’s vision encoder differ from the one in the lecture’s CLIP description?
+**Q144.** ○ *Single answer.* How does Flamingo’s vision encoder differ from a CLIP ViT image encoder?
 
 - ○ **A.** They are identical
-- ○ **B.** Flamingo uses a ViT, while CLIP uses no image encoder
-- ○ **C.** Flamingo trains its encoder from scratch with a captioning loss, as part of the full model
+- ○ **B.** Flamingo trains its encoder from scratch with a captioning loss, as part of the full model
+- ○ **C.** Flamingo uses a ViT, while CLIP uses no image encoder
 - ○ **D.** Flamingo uses a frozen NFNet-F6, trained with a CLIP-style contrastive loss
 
 **Q145.** ☐ *Select all that apply.* Which tasks does composed image retrieval (CIR) cover in Pic2Word? Select all that apply.
@@ -2310,7 +2310,7 @@ The transformation matrix is decomposed into scaling, shearing, rotation, transl
 
 **Q132 → A, B, D**
 
-Steps: embed images and texts, compute cosine similarity, then update both encoders so matching pairs score high and mismatched pairs low. In the lecture’s description, the image encoder is ResNet-based and the text encoder is a Transformer.
+Steps: embed images and texts, compute cosine similarity, then update both encoders so matching pairs score high and mismatched pairs low. CLIP was trained with ResNet and ViT image encoders and a Transformer text encoder. The code below computes the symmetric loss and a zero-shot prediction.
 
 - A: ✓ Correct.
 - B: ✓ Correct.
@@ -2326,18 +2326,18 @@ Zero-shot CLIP is competitive with a fully supervised ResNet-50 linear probe acr
 - C: ✓ Correct.
 - D: ✗ No training is involved in zero-shot transfer.
 
-**Q134 → A, C, D**
+**Q134 → B, C, D**
 
 Emergent capabilities from natural-language supervision include OCR, facial emotion recognition (comparable to humans on FER2013), action recognition (UCF101, Kinetics-700) and geolocalization. Future directions include larger and better data, better benchmarks, and responsible deployment.
 
-- A: ✓ Correct.
-- B: ✗ OCR is one of CLIP’s emergent capabilities (MNIST, SST2).
+- A: ✗ OCR is one of CLIP’s emergent capabilities (MNIST, SST2).
+- B: ✓ Correct.
 - C: ✓ Correct.
 - D: ✓ Correct.
 
 **Q135 → C**
 
-Pipeline: text encoder → prior → decoder. The lecture’s prior is an autoregressive encoder–decoder Transformer trained on CLIP text–image pairs to reproduce the CLIP image embedding from the CLIP text embedding. The paper also explores a diffusion prior. Providing the image embedding gives the decoder extra context and more accurate generations.
+Pipeline: text encoder → prior → decoder. One version of the prior is an autoregressive encoder–decoder Transformer trained on CLIP text–image pairs to reproduce the CLIP image embedding from the CLIP text embedding. The paper also explores a diffusion prior. Providing the image embedding gives the decoder extra context and more accurate generations.
 
 - A: ✗ That is the text encoder (a frozen CLIP model).
 - B: ✗ That is the decoder.
@@ -2391,14 +2391,14 @@ The gate lets the model gradually learn how much visual information to inject, w
 - C: ✓ Correct. tanh(0) = 0 means the new layers contribute nothing at first.
 - D: ✗ The vision path is still used.
 
-**Q141 → A, B, C**
+**Q141 → A, B, D**
 
 These limits follow from its design choices: a frozen LM (inherited priors), a generative objective rather than a contrastive one (weaker retrieval and classification), and reliance on few-shot prompting.
 
 - A: ✓ Correct.
 - B: ✓ Correct.
-- C: ✓ Correct.
-- D: ✗ Flamingo processes video frames sampled at 1 FPS.
+- C: ✗ Flamingo processes video frames sampled at 1 FPS.
+- D: ✓ Correct.
 
 **Q142 → C**
 
@@ -2420,11 +2420,11 @@ Learned latent queries cross-attend to the visual features. Ablations show it be
 
 **Q144 → D**
 
-The slides contrast NFNet-F6 with the ViT used in some CLIP models. The encoder’s 2-D grid is flattened before the resampler.
+NFNet-F6 is a convolutional network without batch norm; CLIP ViT is a Transformer over patches. Both are trained with the same contrastive objective. The encoder’s 2-D grid is flattened before the resampler.
 
 - A: ✗ Different architectures.
-- B: ✗ Both have image encoders.
-- C: ✗ Its encoder is pretrained contrastively and then frozen.
+- B: ✗ Its encoder is pretrained contrastively and then frozen.
+- C: ✗ Both have image encoders.
 - D: ✓ Correct.
 
 **Q145 → A, B, D**
@@ -2447,7 +2447,7 @@ The seven shift datasets vary pose, background and renditions. Fine-tuning CLIP 
 
 **Q147 → C**
 
-The critical factors listed: compute and cost, scale of data, and the technical expertise for distributed systems and GPU management.
+The critical factors: compute and cost, scale of data, and the technical expertise for distributed systems and GPU management.
 
 - A: ✗ It takes thousands of GPUs and months.
 - B: ✗ Private-domain data is scarce.
@@ -2459,13 +2459,13 @@ The critical factors listed: compute and cost, scale of data, and the technical 
 
 ## Class 7 · Diffusion Models
 
-**Q148.** ☐ *Select all that apply.* Which statements describe diffusion models as presented in Prince (2023) and Ho et al. (2020)? Select all that apply.
+**Q148.** ☐ *Select all that apply.* Which statements describe denoising diffusion models (Ho et al., 2020)? Select all that apply.
 
 - ☐ **A.** Like VAEs, they are trained by maximizing a lower bound (ELBO) on the likelihood
 - ☐ **B.** All learned parameters live in the decoder (reverse process)
-- ☐ **C.** The forward process is learned jointly with the decoder, as the encoder of a VAE is
-- ☐ **D.** The forward process is fixed and gradually blends data with noise
-- ☐ **E.** The latent variables z₁…z_T have the same dimensions as the data x
+- ☐ **C.** The forward process is fixed and gradually blends data with noise
+- ☐ **D.** The latent variables z₁…z_T have the same dimensions as the data x
+- ☐ **E.** The forward process is learned jointly with the decoder, as the encoder of a VAE is
 
 **Q149.** ○ *Single answer.* The forward process is z_t = √(1 − β_t) · z_{t−1} + √β_t · ε_t. What do the two terms do?
 
@@ -2510,11 +2510,11 @@ The critical factors listed: compute and cost, scale of data, and the technical 
 - ○ **C.** A learned schedule from the start
 - ○ **D.** A constant β = 0.5 for all steps; later work found a linear schedule better
 
-**Q155.** ☐ *Select all that apply.* Foster’s sampler takes 20 steps, although training used 1,000 noise levels. Which statements are correct? Select all that apply.
+**Q155.** ☐ *Select all that apply.* A sampler takes 20 steps, although training used 1,000 noise levels. Which statements are correct? Select all that apply.
 
-- ☐ **A.** With σ_t = 0 at every step (DDIM), the same input noise always yields the same output
-- ☐ **B.** The number of sampling steps can be far smaller than the number of training steps
-- ☐ **C.** Sampling must run exactly 1,000 steps, because the U-Net only knows the noise levels it saw during training
+- ☐ **A.** The number of sampling steps can be far smaller than the number of training steps
+- ☐ **B.** Sampling must run exactly 1,000 steps, because the U-Net only knows the noise levels it saw during training
+- ☐ **C.** With σ_t = 0 at every step (DDIM), the same input noise always yields the same output
 - ☐ **D.** Each step predicts the noise, estimates x₀, then re-noises that estimate to the t − 1 level
 
 **Q156.** ○ *Single answer.* Why is spherical interpolation, rather than plain linear interpolation, used between two Gaussian noise tensors a and b?
@@ -2531,12 +2531,12 @@ The critical factors listed: compute and cost, scale of data, and the technical 
 - ☐ **C.** Classifier-free guidance embeds the class in the U-Net, trained with and without it
 - ☐ **D.** Classifier-free guidance allows a continuous quality–diversity trade-off by weighting the conditioning
 
-**Q158.** ○ *Single answer.* How does the diffusion training procedure sketched in the lecture handle the intractable likelihood P(x) = ∫ P(x, z₁…z_T) dz?
+**Q158.** ○ *Single answer.* How does diffusion training handle the intractable likelihood P(x) = ∫ P(x, z₁…z_T) dz?
 
-- ○ **A.** It ignores the likelihood and uses only perceptual loss
-- ○ **B.** It lower-bounds the log-likelihood with Jensen’s inequality and maximizes the ELBO
+- ○ **A.** It lower-bounds the log-likelihood with Jensen’s inequality and maximizes the ELBO
+- ○ **B.** It computes the integral exactly with Monte Carlo over all paths
 - ○ **C.** It replaces the likelihood with an adversarial loss from a discriminator that tells real images from denoised ones
-- ○ **D.** It computes the integral exactly with Monte Carlo over all paths
+- ○ **D.** It ignores the likelihood and uses only perceptual loss
 
 **Q159.** ☐ *Select all that apply.* Which statements about Sora (“Video generation models as world simulators”) are correct? Select all that apply.
 
@@ -2546,11 +2546,11 @@ The critical factors listed: compute and cost, scale of data, and the technical 
 - ☐ **D.** It is a diffusion transformer that predicts clean patches from noisy ones, conditioned on text
 - ☐ **E.** It trains on native resolutions, durations and aspect ratios instead of cropping to a fixed size
 
-**Q160.** ○ *Single answer.* Prince’s “Catty10 → Catty9” analogy illustrates which part of diffusion training?
+**Q160.** ○ *Single answer.* A network receives z_t (an image noised to level t) and is trained to output something close to z_{t−1}. Which part of diffusion training is this?
 
-- ○ **A.** Computing the marginal distribution q(z_t)
-- ○ **B.** Learning each reverse step: from a t-step-noised image, predict the (t−1)-step version
-- ○ **C.** Training a discriminator that distinguishes scribbled copies from clean originals, as in adversarial training
+- ○ **A.** Learning each reverse step: from a t-step-noised image, predict the (t−1)-step version
+- ○ **B.** Training a discriminator that distinguishes scribbled copies from clean originals, as in adversarial training
+- ○ **C.** Computing the marginal distribution q(z_t)
 - ○ **D.** Training the forward process to add the right amount of noise for each individual image
 
 **Q161.** ○ *Single answer.* What does the marginal q(z_t) represent?
@@ -2589,12 +2589,12 @@ The critical factors listed: compute and cost, scale of data, and the technical 
 - ○ **C.** The predicted clean image x̂₀ = (x_t − √(1−ᾱ_t) ε̂) / √ᾱ_t
 - ○ **D.** The next noise sample to add
 
-**Q166.** ☐ *Select all that apply.* Which training setup did Foster’s Keras diffusion model use? Select all that apply.
+**Q166.** ☐ *Select all that apply.* Which of these belong to a standard Keras diffusion-model training setup? Select all that apply.
 
-- ☐ **A.** Normalization statistics computed on the training set
-- ☐ **B.** A mean absolute error loss on the predicted noise
-- ☐ **C.** A discriminator network trained jointly with the U-Net to sharpen the generated samples
-- ☐ **D.** The AdamW optimizer, which is Adam with decoupled weight decay
+- ☐ **A.** The AdamW optimizer, which is Adam with decoupled weight decay
+- ☐ **B.** Normalization statistics computed on the training set
+- ☐ **C.** A mean absolute error loss on the predicted noise
+- ☐ **D.** A discriminator network trained jointly with the U-Net to sharpen the generated samples
 
 **Q167.** ○ *Single answer.* How does the cascaded text-to-image diffusion system reach 1024×1024 output?
 
@@ -2613,15 +2613,15 @@ The critical factors listed: compute and cost, scale of data, and the technical 
 
 ### Answer key — Class 7 · Diffusion Models
 
-**Q148 → A, B, D, E**
+**Q148 → A, B, C, D**
 
 Diffusion models are easy to train and produce samples that can exceed GAN realism. Generation draws z_T from N(0, I) and passes it through the learned decoder step by step.
 
 - A: ✓ Correct.
 - B: ✓ Correct.
-- C: ✗ The forward process has no learned parameters. Its noise schedule is a hyperparameter.
-- D: ✓ Correct.
-- E: ✓ Correct. This differs from VAEs, whose latent is lower-dimensional.
+- C: ✓ Correct.
+- D: ✓ Correct. This differs from VAEs, whose latent is lower-dimensional.
+- E: ✗ The forward process has no learned parameters. Its noise schedule is a hyperparameter.
 
 **Q149 → C**
 
@@ -2652,7 +2652,7 @@ By Bayes’ rule, q(z_{t−1} | z_t) ∝ q(z_t | z_{t−1}) q(z_{t−1}). This i
 
 **Q152 → A**
 
-The loss becomes a least-squares error between the true and predicted noise (Foster’s implementation uses mean absolute error with AdamW). Predicting the noise is an easier learning task, and the noise has the same shape as the image, which is why a U-Net is used.
+The loss becomes a least-squares error between the true and predicted noise (mean absolute error also works in practice). Predicting the noise is an easier learning task, and the noise has the same shape as the image, which is why a U-Net is used.
 
 - A: ✓ Correct. The loss compares ε̂ = g_t(z_t, φ) with the true ε.
 - B: ✗ β_t is fixed.
@@ -2661,9 +2661,9 @@ The loss becomes a least-squares error between the true and predicted noise (Fos
 
 **Q153 → B, C, D, E**
 
-Residual blocks connect adjacent representations, with periodic global self-attention. In Foster’s Keras version, each DownBlock has two residual blocks and average pooling, and each UpBlock has bilinear upsampling, concatenation of skips, and two residual blocks.
+Residual blocks connect adjacent representations, with periodic global self-attention. In a typical Keras implementation, each DownBlock has two residual blocks and average pooling, and each UpBlock has bilinear upsampling, concatenation of skips, and two residual blocks.
 
-- A: ✗ One shared network is conditioned on t. Prince’s cat analogy, with one network per step, is only conceptual.
+- A: ✗ One shared network is conditioned on t. Separate networks would multiply the parameters by 1,000 and share no knowledge between noise levels.
 - B: ✓ Correct.
 - C: ✓ Correct.
 - D: ✓ Correct.
@@ -2678,13 +2678,13 @@ Increasing β_t means early steps destroy little detail. Nichol & Dhariwal’s c
 - C: ✗ The DDPM schedule was fixed and linear.
 - D: ✗ Neither part is right.
 
-**Q155 → A, B, D**
+**Q155 → A, C, D**
 
 Song et al. (2020) DDIM equation: x_{t−1} = √ᾱ_{t−1} · x̂₀ + √(1 − ᾱ_{t−1} − σ_t²) · ε̂ + σ_t ε. A deterministic mapping gives a well-defined correspondence between latent noise and images, which is useful for interpolation.
 
-- A: ✓ Correct. DDIM sampling is deterministic.
-- B: ✓ Correct.
-- C: ✗ The time embedding is continuous, and DDIM-style updates allow skipping levels.
+- A: ✓ Correct.
+- B: ✗ The time embedding is continuous, and DDIM-style updates allow skipping levels.
+- C: ✓ Correct. DDIM sampling is deterministic.
 - D: ✓ Correct. This is the two-step jump from x_t to x_{t−1}.
 
 **Q156 → C**
@@ -2705,37 +2705,37 @@ Text-to-image systems (e.g., Imagen, Saharia et al. 2022) condition on a sentenc
 - C: ✓ Correct.
 - D: ✓ Correct.
 
-**Q158 → B**
+**Q158 → A**
 
 The loss has a reconstruction term (recovering x from z₁) and diffusion terms (matching each predicted z_{t−1} to the Gaussian target from q(z_{t−1} | z_t, x)). It is summed over data points and steps. In practice: sample a time step, diffuse with the kernel, and update the decoder.
 
-- A: ✗ Training is likelihood-based.
-- B: ✓ Correct.
+- A: ✓ Correct.
+- B: ✗ The integral cannot be computed exactly.
 - C: ✗ Diffusion models are not adversarial.
-- D: ✗ The integral cannot be computed exactly.
+- D: ✗ Training is likelihood-based.
 
 **Q159 → B, C, D, E**
 
 Sample quality improves markedly with compute (base → 4× → 32×). GPT expands short prompts into detailed captions. Sora animates images, extends videos, loops, does SDEdit-based editing and interpolation, and generates images up to 2048×2048 using a one-frame spatial grid.
 
-- A: ✗ These are listed limitations. Physics and object-state changes are often wrong.
+- A: ✗ These are known limitations. Physics and object-state changes are often wrong, because nothing in a patch-level denoising loss enforces conservation laws.
 - B: ✓ Correct.
 - C: ✓ Correct.
 - D: ✓ Correct.
 - E: ✓ Correct.
 
-**Q160 → B**
+**Q160 → A**
 
-The analogy: Net10 learns to turn 10-second scribbles into 9-second scribbles, then Net9, and so on. Generation starts from a fully scribbled image and applies the networks in reverse. In practice, one U-Net conditioned on t replaces the separate networks.
+The reverse step is the only learned part. The training pair (z_t, target) comes from the fixed forward process. The exact target is q(z_{t−1} | z_t, x), a Gaussian with closed form (see the code, where a brute-force simulation matches the formula). Generation starts from N(0, I) and applies the learned step for t = T…1. In practice one U-Net conditioned on t does every step, and it predicts ε rather than z_{t−1}.
 
-- A: ✗ The marginal is a separate idea (the overall distribution of scribbled photos).
-- B: ✓ Correct.
-- C: ✗ No discriminator is involved.
+- A: ✓ Correct.
+- B: ✗ No discriminator is involved.
+- C: ✗ The marginal is a separate idea (the overall distribution of scribbled photos).
 - D: ✗ The forward process (scribbling) is fixed. Only denoising is learned.
 
 **Q161 → A**
 
-q(z_t) = ∫ q(z_t | x) Pr(x) dx. Prince’s analogy: “the overall distribution of scribbled photos after scribbling for time t.” As t grows it blurs Pr(x) toward N(0, I). In a fitted model, the estimated marginals closely match these true marginals.
+q(z_t) = ∫ q(z_t | x) Pr(x) dx. It is the distribution you would get by noising every training image to level t and pooling the results. As t grows it blurs Pr(x) toward N(0, I). In a fitted model, the estimated marginals closely match these true marginals.
 
 - A: ✓ Correct.
 - B: ✗ That is the kernel q(z_t | x).
@@ -2753,7 +2753,7 @@ Each step multiplies by √0.97 ≈ 0.985 and adds noise with variance 0.03. The
 
 **Q163 → A, B, C**
 
-Speed-ups covered in the lecture: deterministic formulations (DDIM) and fewer steps (e.g., 20). Conditioning (class, image, text) can be added at every denoising step.
+Speed-ups: deterministic DDIM updates that jump between noise levels, so about 20 steps can replace 1,000 (see the DDIM code). Conditioning (class, image, text) can be added at every denoising step.
 
 - A: ✓ Correct.
 - B: ✓ Correct.
@@ -2779,14 +2779,14 @@ Then x_{t−1} = √ᾱ_{t−1} x̂₀ + √(1 − ᾱ_{t−1}) ε̂ (when σ = 
 - C: ✓ Correct.
 - D: ✗ Fresh noise is only added when σ_t > 0.
 
-**Q166 → A, B, D**
+**Q166 → A, B, C**
 
 The model was trained for 50 epochs. DownBlocks use average pooling; UpBlocks use bilinear upsampling plus concatenated skips.
 
 - A: ✓ Correct.
 - B: ✓ Correct.
-- C: ✗ No discriminator is used.
-- D: ✓ Correct.
+- C: ✓ Correct.
+- D: ✗ No discriminator is used.
 
 **Q167 → C**
 

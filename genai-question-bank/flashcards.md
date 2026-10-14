@@ -29,9 +29,9 @@
 |---|---|
 | Conv layer parameter formula | (k_h · k_w · C_in + 1) · filters. It does not depend on the input’s height or width. |
 | Dense layer parameter formula | inputs · outputs + outputs (biases). Flatten and pooling layers have 0 parameters. |
-| Lecture CNN parameter total | Conv1 490 + Conv2 1,820 + Flatten 0 + Dense 12,810 = 15,120. |
+| Parameter total: Conv(4×4, 3→10) → Conv(3×3, 10→20) → Flatten(1,280) → Dense(10) | Conv1 490 + Conv2 1,820 + Flatten 0 + Dense 12,810 = 15,120. |
 | CIFAR-10 | 60,000 32×32 RGB images, 10 classes, 6,000 per class. Vanilla NN 50.89%, CNN ≈70%, random 10%. |
-| Feature hierarchy (Foster units A–D) | A: pixels → B: edges and textures → C: parts (eyes, teeth) → D: concepts (“smiling”). |
+| CNN feature hierarchy, layer by layer | Input: pixels → low-level: edges and textures → mid-level: parts (eyes, teeth) → high-level: concepts (“smiling”). |
 | padding='valid' vs 'same' | valid: no padding, so the output shrinks. same: zero padding keeps the size (stride 1); stride 2 halves it. |
 | AlexNet key facts | ReLU everywhere; 3×3 max pooling with stride 2; 3 fully connected layers in the head; biases initialized slightly positive. |
 | Residual (skip) connection | f(x) = C(x) + x, so C learns the residual f(x) − x. Identity is easy (C = 0), gradients flow, and the loss landscape is smoother. |
